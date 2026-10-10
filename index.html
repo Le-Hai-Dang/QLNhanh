@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="LE CORNER Inventory - quản lý kho, bán hàng và lịch sử dữ liệu"
+    />
+    <title>LE CORNER Inventory</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="appShell" class="app-shell">
+      <aside class="sidebar" aria-label="Điều hướng chính">
+        <div class="brand">
+          <span class="brand-mark">LC</span>
+          <div><strong>LE CORNER</strong><small>Inventory</small></div>
+        </div>
+        <nav id="mainNav" class="nav-list" aria-label="Menu chính">
+          <button
+            class="nav-item active"
+            data-view="dashboard"
+            data-testid="nav-dashboard"
+          >
+            Tổng quan
+          </button>
+          <button class="nav-item" data-view="menuItems" data-testid="nav-menu">
+            Món bán
+          </button>
+          <button
+            class="nav-item"
+            data-view="ingredients"
+            data-testid="nav-ingredients"
+          >
+            Nguyên liệu
+          </button>
+          <button
+            class="nav-item"
+            data-view="recipes"
+            data-testid="nav-recipes"
+          >
+            Công thức
+          </button>
+          <button class="nav-item" data-view="sales" data-testid="nav-sales">
+            Bán hàng
+          </button>
+          <button
+            class="nav-item"
+            data-view="purchaseReceipts"
+            data-testid="nav-purchases"
+          >
+            Nhập hàng
+          </button>
+          <button
+            class="nav-item"
+            data-view="stockCounts"
+            data-testid="nav-stock"
+          >
+            Kiểm kho
+          </button>
+          <button
+            class="nav-item"
+            data-view="history"
+            data-testid="nav-history"
+          >
+            Lịch sử
+          </button>
+          <button class="nav-item" data-view="backup" data-testid="nav-backup">
+            Sao lưu & khôi phục
+          </button>
+        </nav>
+        <div class="sidebar-foot">
+          <span class="status-dot"></span
+          ><span id="authStatus">Đang kết nối...</span>
+        </div>
+      </aside>
+      <main class="main-content">
+        <header class="topbar">
+          <button id="mobileMenu" class="icon-button" aria-label="Mở menu">
+            ☰
+          </button>
+          <div>
+            <p class="eyebrow">Quản lý quán</p>
+            <h1 id="pageTitle">Tổng quan</h1>
+          </div>
+          <div class="topbar-actions">
+            <span id="saveStatus" class="save-status">Chưa có thay đổi</span
+            ><button
+              id="refreshButton"
+              class="secondary-button"
+              data-testid="refresh-button"
+            >
+              Làm mới
+            </button>
+          </div>
+        </header>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+        <section id="view" class="view" aria-live="polite"></section>
+      </main>
+    </div>
+    <dialog id="entityDialog" class="dialog" aria-labelledby="dialogTitle">
+      <form id="entityForm">
+        <div class="dialog-head">
+          <div>
+            <p class="eyebrow" id="dialogEyebrow">Dữ liệu</p>
+            <h2 id="dialogTitle">Thêm bản ghi</h2>
+          </div>
+          <button
+            type="button"
+            class="icon-button"
+            id="closeDialog"
+            aria-label="Đóng"
+          >
+            ×
+          </button>
+        </div>
+        <div id="dialogFields" class="form-grid"></div>
+        <div class="dialog-actions">
+          <button type="button" class="secondary-button" id="cancelDialog">
+            Hủy</button
+          ><button
+            type="submit"
+            class="primary-button"
+            data-testid="save-entity"
+          >
+            Lưu thay đổi
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog
+      id="detailDialog"
+      class="dialog wide-dialog"
+      aria-labelledby="detailTitle"
+    >
+      <div class="dialog-head">
+        <div>
+          <p class="eyebrow">Chi tiết lịch sử</p>
+          <h2 id="detailTitle">Sự kiện</h2>
+        </div>
+        <button
+          type="button"
+          class="icon-button"
+          id="closeDetail"
+          aria-label="Đóng"
+        >
+          ×
+        </button>
+      </div>
+      <div id="detailBody"></div>
+    </dialog>
+    <dialog
+      id="confirmationDialog"
+      class="dialog"
+      aria-labelledby="confirmationTitle"
+    >
+      <div>
+        <h2 id="confirmationTitle">Xác nhận thao tác</h2>
+        <p id="confirmationMessage"></p>
+        <div class="toolbar">
+          <button id="confirmYes" type="button" class="primary-button">
+            Xác nhận</button
+          ><button id="confirmNo" type="button" class="secondary-button">
+            Hủy
+          </button>
+        </div>
+      </div>
+    </dialog>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>

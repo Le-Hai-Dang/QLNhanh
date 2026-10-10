@@ -1,0 +1,11 @@
+{
+  "name": "le-corner-inventory",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "python3 -m http.server 8000 --bind 127.0.0.1",
+    "start:keep": "python3 scripts/start-local.py"
+  }
+}

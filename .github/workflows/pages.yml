@@ -1,0 +1,72 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript and business logic
+        run: |
+          node --check js/app.js
+          node --check js/domain.js
+          node --check js/repository.js
+          npm test
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Prepare website
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+        run: |
+          test -n "$FIREBASE_API_KEY"
+          mkdir -p _site/js
+          cat > firebase-config.js <<'EOF'
+          // Generated during GitHub Pages deployment. The Firebase Web API key
+          // identifies the public Firebase app; access is enforced by Auth and Rules.
+          window.LE_CORNER_FIREBASE_CONFIG = {
+            apiKey: "__FIREBASE_API_KEY__",
+            authDomain: "qlnhanh.firebaseapp.com",
+            projectId: "qlnhanh",
+            storageBucket: "qlnhanh.firebasestorage.app",
+            messagingSenderId: "311550221028",
+            appId: "1:311550221028:web:d4111c11bd9230784deaf1",
+          };
+          EOF
+          sed -i "s/__FIREBASE_API_KEY__/$FIREBASE_API_KEY/" firebase-config.js
+          cp index.html styles.css firebase-config.js _site/
+          cp js/app.js js/domain.js js/repository.js _site/js/
+          touch _site/.nojekyll
+      - name: Upload website
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy website
+        id: deployment
+        uses: actions/deploy-pages@v4
