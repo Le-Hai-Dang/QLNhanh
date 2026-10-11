@@ -9,6 +9,8 @@ import {
   previewChange,
   validateBackup,
   checksum,
+  backupDiff,
+  changedFields,
   backupSummary,
   buildBatch,
   BusinessError,
@@ -45,6 +47,8 @@ const state = {
   busy: false,
   connected: false,
   historyLimit: 50,
+  saleQty: 1,
+  selectedMenu: "",
   filters: {
     q: "",
     entity: "",
@@ -58,12 +62,12 @@ const state = {
 const labels = {
   ...LABELS,
   dashboard: "Tổng quan",
-  sales: "Nhập món bán",
   backup: "Sao lưu & khôi phục",
   settings: "Cài đặt",
   history: "Lịch sử",
-  salesList: "Hóa đơn",
+  salesList: "Hóa đơn bán",
 };
+const viewTitle = (v) => (v === "sales" ? "Nhập món bán" : labels[v] || v);
 const esc = (v) =>
   String(v ?? "").replace(
     /[&<>"']/g,
@@ -82,14 +86,203 @@ const dateText = (v) =>
       }).format(new Date(v))
     : "—";
 const money = (v) => Number(v || 0).toLocaleString("vi-VN") + "đ";
+let toastTimer = null;
+// The toast is a popover so it renders in the top layer, above open dialogs.
 const toast = (message, error = false) => {
   const el = document.querySelector("#toast");
   if (!el) return;
   el.textContent = message;
   el.style.background = error ? "var(--red)" : "var(--green-strong)";
   el.className = "toast show";
-  setTimeout(() => (el.className = "toast"), 3200);
+  try {
+    if (!el.matches(":popover-open")) el.showPopover();
+  } catch {}
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(
+    () => {
+      el.className = "toast";
+      try {
+        el.hidePopover();
+      } catch {}
+    },
+    error ? 5500 : 3200,
+  );
 };
+const ACTION_LABELS = {
+  CREATE: "Thêm mới",
+  UPDATE: "Chỉnh sửa",
+  ARCHIVE: "Ẩn",
+  RESTORE: "Khôi phục",
+  ADJUST: "Điều chỉnh",
+};
+const STATUS_LABELS = {
+  ACTIVE: "Đang dùng",
+  ARCHIVED: "Đã ẩn",
+  CANCELLED: "Đã hủy",
+  SUPERSEDED: "Đã thay thế",
+};
+const UNIT_LABELS = { g: "g", ml: "ml", unit: "đơn vị", kg: "kg", l: "lít" };
+const FIELD_LABELS = {
+  name: "Tên",
+  englishName: "Tên tiếng Anh",
+  code: "Mã",
+  group: "Nhóm",
+  price: "Giá bán",
+  unit: "Đơn vị",
+  aliases: "Tên tương đương",
+  status: "Trạng thái",
+  baseUnit: "Đơn vị chuẩn",
+  packageSize: "Quy cách",
+  openingStock: "Tồn đầu",
+  minimumStock: "Ngưỡng đặt hàng",
+  unitCost: "Giá vốn",
+  items: "Chi tiết",
+  date: "Ngày",
+  invoiceNo: "Mã hóa đơn",
+  note: "Ghi chú",
+  total: "Tổng tiền",
+  quantity: "Số lượng",
+  menuItemId: "Món",
+  ingredientId: "Nguyên liệu",
+  adjusted: "Đã điều chỉnh",
+  consumptionIncomplete: "Thiếu định lượng",
+  stock: "Tồn kho",
+};
+const HIDDEN_FIELDS = [
+  "id",
+  "version",
+  "createdAt",
+  "updatedAt",
+  "updatedSeq",
+  "lastEventId",
+  "lastCountAdjustmentSeq",
+  "datasetId",
+  "stockImpact",
+  "recipeSnapshot",
+];
+let ingredientIndex = null;
+const ingredientById = (id) => {
+  if (ingredientIndex?.source !== state.catalog.ingredients)
+    ingredientIndex = {
+      source: state.catalog.ingredients,
+      map: new Map((state.catalog.ingredients || []).map((i) => [i.id, i])),
+    };
+  return ingredientIndex.map.get(id);
+};
+const ingName = (id) => ingredientById(id)?.name || id;
+const unitText = (u) => UNIT_LABELS[u] || u || "";
+const itemsText = (items, detail = false) =>
+  (items || [])
+    .map((i) => {
+      const name = i.name || (i.ingredientId ? ingName(i.ingredientId) : i.menuItemId);
+      const qty = i.quantity ?? i.actual;
+      return (
+        name +
+        " × " +
+        qty +
+        (i.ingredientId && i.unit ? " " + unitText(i.unit) : "") +
+        (detail && i.price != null ? " @ " + money(i.price) : "") +
+        (detail && i.unitCost != null ? " (giá " + money(i.unitCost) + ")" : "")
+      );
+    })
+    .join(", ");
+function fmtVal(key, v) {
+  if (v == null || v === "") return "—";
+  if (typeof v === "boolean") return v ? "Có" : "Không";
+  if (key === "status") return STATUS_LABELS[v] || v;
+  if (key === "price" || key === "total" || key === "unitCost") return money(v);
+  if (key === "ingredientId") return ingName(v);
+  if (key === "items" && Array.isArray(v)) return itemsText(v, true) || "—";
+  if (Array.isArray(v)) return v.join(", ") || "—";
+  if (typeof v === "object") return JSON.stringify(v);
+  return String(v);
+}
+const isBlank = (v) => v == null || v === "";
+const diffFields = (before, after) =>
+  changedFields(before || {}, after || {}).filter(
+    (k) =>
+      !HIDDEN_FIELDS.includes(k) &&
+      !(isBlank(before?.[k]) && isBlank(after?.[k])),
+  );
+function diffTable(before, after) {
+  const fields = diffFields(before, after);
+  if (!fields.length)
+    return '<p class="muted">Không có thay đổi hiển thị.</p>';
+  return (
+    '<div class="table-wrap"><table class="data-table diff-table"><thead><tr><th>Trường</th><th>Trước</th><th>Sau</th></tr></thead><tbody>' +
+    fields
+      .map(
+        (k) =>
+          "<tr><td>" +
+          esc(FIELD_LABELS[k] || k) +
+          '</td><td class="wrap">' +
+          esc(fmtVal(k, before?.[k])) +
+          '</td><td class="wrap"><strong>' +
+          esc(fmtVal(k, after?.[k])) +
+          "</strong></td></tr>",
+      )
+      .join("") +
+    "</tbody></table></div>"
+  );
+}
+function impactList(impacts) {
+  if (!impacts?.length) return '<p class="muted">Không làm thay đổi tồn kho.</p>';
+  return (
+    '<ul class="impact-list">' +
+    impacts
+      .map((i) => {
+        const ing = ingredientById(i.ingredientId);
+        return (
+          "<li><strong>" +
+          esc(ing?.name || i.ingredientId) +
+          "</strong>: " +
+          (i.quantity > 0 ? "+" : "") +
+          esc(i.quantity) +
+          " " +
+          esc(unitText(ing?.baseUnit)) +
+          "</li>"
+        );
+      })
+      .join("") +
+    "</ul>"
+  );
+}
+const impactPlain = (impacts) =>
+  impacts?.length
+    ? impacts
+        .map(
+          (i) =>
+            ingName(i.ingredientId) +
+            " " +
+            (i.quantity > 0 ? "+" : "") +
+            i.quantity +
+            " " +
+            unitText(ingredientById(i.ingredientId)?.baseUnit),
+        )
+        .join("; ")
+    : "không đổi tồn kho";
+const rawDetails = (value, title = "Dữ liệu gốc (JSON)") =>
+  "<details><summary>" +
+  title +
+  "</summary><pre>" +
+  esc(JSON.stringify(value, null, 2)) +
+  "</pre></details>";
+function localStamp() {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Ho_Chi_Minh",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    })
+      .formatToParts(new Date())
+      .map((x) => [x.type, x.value]),
+  );
+  return p.year + "-" + p.month + "-" + p.day + "_" + p.hour + p.minute;
+}
 const status = (t) => {
   const el = document.querySelector("#saveStatus");
   if (el) el.textContent = t;
@@ -220,39 +413,61 @@ async function commitPlan(plan) {
   toast("Đã lưu " + (labels[plan.collection] || plan.collection));
 }
 
+const NAV = [
+  ["dashboard", "nav-dashboard", "Tổng quan"],
+  ["sales", "nav-sales", "Nhập món bán"],
+  ["stockCounts", "nav-stock", "Kiểm kho"],
+  ["ingredients", "nav-ingredients", "Nguyên liệu"],
+  ["purchaseReceipts", "nav-purchases", "Nhập hàng"],
+  ["menuItems", "nav-menu", "Món bán"],
+  ["recipes", "nav-recipes", "Công thức"],
+  ["reorderSettings", "nav-reorder", "Ngưỡng đặt hàng"],
+  ["history", "nav-history", "Lịch sử"],
+  ["backup", "nav-backup", "Sao lưu & khôi phục"],
+];
 function nav() {
-  return (
-    '<button class="nav-item ' +
-    (state.view === "dashboard" ? "active" : "") +
-    '" data-view="dashboard" data-testid="nav-dashboard">Tổng quan</button><button class="nav-item ' +
-    (state.view === "sales" ? "active" : "") +
-    '" data-view="sales" data-testid="nav-sales">Nhập món bán</button><button class="nav-item ' +
-    (state.view === "stockCounts" ? "active" : "") +
-    '" data-view="stockCounts" data-testid="nav-stock">Kiểm kho</button><button class="nav-item ' +
-    (state.view === "ingredients" ? "active" : "") +
-    '" data-view="ingredients" data-testid="nav-ingredients">Nguyên liệu</button><button class="nav-item ' +
-    (state.view === "purchaseReceipts" ? "active" : "") +
-    '" data-view="purchaseReceipts" data-testid="nav-purchases">Nhập hàng</button><button class="nav-item ' +
-    (state.view === "menuItems" ? "active" : "") +
-    '" data-view="menuItems" data-testid="nav-menu">Menu & công thức</button><button class="nav-item ' +
-    (state.view === "recipes" ? "active" : "") +
-    '" data-view="recipes" data-testid="nav-recipes">Phiên bản công thức</button><button class="nav-item ' +
-    (state.view === "reorderSettings" ? "active" : "") +
-    '" data-view="reorderSettings" data-testid="nav-reorder">Ngưỡng đặt hàng</button><button class="nav-item ' +
-    (state.view === "history" ? "active" : "") +
-    '" data-view="history" data-testid="nav-history">Lịch sử</button><button class="nav-item ' +
-    (state.view === "backup" ? "active" : "") +
-    '" data-view="backup" data-testid="nav-backup">Sao lưu & khôi phục</button>'
-  );
+  const current = state.view === "salesList" ? "sales" : state.view;
+  return NAV.map(
+    ([view, testid, label]) =>
+      '<button class="nav-item' +
+      (current === view ? " active" : "") +
+      '" data-view="' +
+      view +
+      '" data-testid="' +
+      testid +
+      '"' +
+      (current === view ? ' aria-current="page"' : "") +
+      ">" +
+      esc(label) +
+      "</button>",
+  ).join("");
+}
+function navigate(view, filters = {}) {
+  state.view = view;
+  state.filters = {
+    q: "",
+    entity: "",
+    action: "",
+    source: "",
+    from: "",
+    to: "",
+    entityId: "",
+    ...filters,
+  };
+  state.historyLimit = 50;
+  document.querySelector(".sidebar").classList.remove("open");
+  render();
+  window.scrollTo({ top: 0 });
 }
 function renderShell() {
   document.querySelector("#mainNav").innerHTML = nav();
   syncSidebar();
   document.querySelector("#pageTitle").textContent =
-    labels[state.view] || state.view;
+    viewTitle(state.view);
+  document.title = viewTitle(state.view) + " · LE CORNER Inventory";
   document.querySelector("#authStatus").textContent = state.connected
     ? repo.mode === "firebase"
-      ? "Đã xác thực ẩn"
+      ? "Đã kết nối Firebase"
       : "Demo cục bộ · không đồng bộ"
     : "Chưa kết nối Firebase";
 }
@@ -411,9 +626,9 @@ function salesView() {
     input(
       "sale-quantity",
       "Số lượng",
-      1,
+      state.saleQty,
       "number",
-      'min="1" step="1" data-testid="sale-quantity"',
+      'min="1" step="1" inputmode="numeric" data-testid="sale-quantity"',
     ) +
     '</div><div class="toolbar" style="margin-top:16px"><button class="primary-button" id="add-sale-item" data-action="add-cart" data-testid="add-sale-item">+ Thêm món</button><button class="secondary-button" data-action="clear-cart">Xóa giỏ</button></div><div id="sales-message" class="notice" style="margin-top:16px">Giá và công thức lấy từ Menu Settings. Hóa đơn chỉ ghi kho sau khi bấm Lưu.</div></div><div class="card"><div class="section-head"><div><p class="eyebrow">Preview trước commit</p><h2>Danh sách đã nhập</h2></div><strong id="sale-total" data-testid="sale-total">' +
     money(total) +
@@ -439,92 +654,143 @@ function salesView() {
           )
           .join("") +
         '</tbody></table></div><div class="toolbar" style="justify-content:flex-end;margin-top:16px"><button class="primary-button" data-action="save-sale" data-testid="save-sale">Lưu hóa đơn</button></div>'
-      : '<div class="empty"><strong>Chưa có món</strong><span>Dùng search và dropdown ở bên trái để thêm.</span></div>') +
+      : '<div class="empty"><strong>Chưa có món</strong><span>Chọn món và số lượng ở phần nhập liệu, rồi bấm “+ Thêm món”.</span></div>') +
     '</div></div><div class="card" style="margin-top:16px"><div class="section-head"><div><p class="eyebrow">AI Batch Mode</p><h2>Nhập nhiều hóa đơn</h2></div></div><textarea id="sales-ai-input" class="textarea" rows="7" data-testid="ai-batch-input" placeholder="{&quot;schemaVersion&quot;:1,&quot;module&quot;:&quot;sales&quot;,&quot;operation&quot;:&quot;create&quot;,&quot;records&quot;:[{&quot;invoiceNo&quot;:&quot;HD002587&quot;,&quot;date&quot;:&quot;2026-10-09&quot;,&quot;items&quot;:[{&quot;menuName&quot;:&quot;AMERICANO&quot;,&quot;quantity&quot;:1}],&quot;expectedTotal&quot;:39000}]}"></textarea><div class="toolbar" style="margin-top:10px"><button class="secondary-button" data-action="validate-sales-ai" data-testid="validate-batch">Kiểm tra batch</button></div><div id="sales-ai-preview">' +
     (state.aiDraft?.module === "sales" ? aiPreview() : "") +
     "</div></div>"
   );
 }
+function rowSummary(collection, r) {
+  if (collection === "menuItems")
+    return [money(r.price), r.group].filter(Boolean).join(" · ");
+  if (collection === "ingredients")
+    return (
+      "Tồn " + r.stock + " " + unitText(r.baseUnit) +
+      " · ngưỡng " + (r.minimumStock ?? 0)
+    );
+  if (collection === "recipes") return itemsText(r.items) || "—";
+  if (collection === "sales")
+    return r.date + " · " + money(r.total) + " · " + itemsText(r.items);
+  if (collection === "purchaseReceipts")
+    return r.date + " · " + (itemsText(r.items) || "—");
+  if (collection === "stockCounts")
+    return (
+      r.date + " · " + (r.adjusted ? "Đã điều chỉnh tồn" : "Chưa áp dụng") +
+      " · " + itemsText(r.items)
+    );
+  if (collection === "reorderSettings")
+    return "Ngưỡng " + r.minimumStock + (r.note ? " · " + r.note : "");
+  return r.note || "—";
+}
 function listView(collection) {
-  const rows = state.catalog[collection] || [];
+  const rows = [...(state.catalog[collection] || [])].sort((a, b) =>
+    a.status === b.status
+      ? String(a.name || "").localeCompare(String(b.name || ""), "vi")
+      : a.status === "ACTIVE"
+        ? -1
+        : b.status === "ACTIVE"
+          ? 1
+          : 0,
+  );
   const q = state.filters.q.toLowerCase();
   const filtered = rows.filter(
     (r) => !q || JSON.stringify(r).toLowerCase().includes(q),
   );
+  const noun = labels[collection];
   return (
     '<div class="section-head"><div><p class="eyebrow">Thiết lập</p><h2>' +
-    esc(labels[collection]) +
-    '</h2></div><div class="toolbar"><input class="input" id="list-search" aria-label="Tìm nhanh" placeholder="Tìm nhanh..." value="' +
+    esc(noun) +
+    '</h2></div><div class="toolbar"><input class="input" id="list-search" type="search" aria-label="Tìm nhanh" placeholder="Tìm nhanh..." value="' +
     esc(state.filters.q) +
     '"><button class="primary-button" data-action="add" data-collection="' +
     collection +
     '">+ Thêm</button></div></div><div class="card">' +
     (filtered.length
-      ? '<div class="table-wrap"><table class="data-table"><thead><tr><th>Tên / ID</th><th>Thông tin</th><th>Trạng thái</th><th>Phiên bản</th><th></th></tr></thead><tbody>' +
+      ? '<div class="table-wrap"><table class="data-table"><thead><tr><th>Tên</th><th>Thông tin</th><th>Trạng thái</th><th>Phiên bản</th><th>Thao tác</th></tr></thead><tbody>' +
         filtered
           .map(
             (r) =>
               '<tr data-row-id="' +
               esc(r.id) +
-              '"><td><strong>' +
+              '"><td class="wrap"><strong>' +
               esc(r.name || r.id) +
-              "</strong><br><small>" +
-              esc(r.code || r.id) +
-              "</small></td><td>" +
-              esc(
-                r.total != null
-                  ? money(r.total)
-                  : r.quantity != null
-                    ? r.quantity + " " + (r.unit || "")
-                    : r.price != null
-                      ? money(r.price)
-                      : r.baseUnit
-                        ? r.stock + " " + r.baseUnit
-                        : r.note || "—",
-              ) +
+              "</strong>" +
+              (r.code ? "<br><small>" + esc(r.code) + "</small>" : "") +
+              '</td><td class="wrap summary-cell">' +
+              esc(rowSummary(collection, r)) +
               '</td><td><span class="badge ' +
               (r.status === "ARCHIVED" ? "archived" : "") +
               '">' +
-              esc(r.status || "ACTIVE") +
+              esc(STATUS_LABELS[r.status] || r.status || "Đang dùng") +
               "</span></td><td>v" +
               (r.version || 1) +
-              '</td><td><div class="toolbar">' +
+              '</td><td class="wrap"><div class="toolbar row-actions">' +
               (collection === "stockCounts" && !r.adjusted
                 ? '<button class="primary-button" data-action="adjust-count" data-id="' +
-                  r.id +
+                  esc(r.id) +
                   '">Áp dụng kiểm kê</button>'
                 : "") +
               '<button class="secondary-button" data-action="versions" data-collection="' +
               collection +
               '" data-id="' +
-              r.id +
+              esc(r.id) +
               '">Phiên bản</button><button class="secondary-button" data-action="entity-history" data-collection="' +
               collection +
               '" data-id="' +
-              r.id +
-              '">Lịch sử</button><button class="secondary-button" data-action="edit" data-collection="' +
-              collection +
-              '" data-id="' +
-              r.id +
-              '">Sửa</button>' +
+              esc(r.id) +
+              '">Lịch sử</button>' +
+              (collection === "stockCounts" && r.adjusted
+                ? ""
+                : '<button class="secondary-button" data-action="edit" data-collection="' +
+                  collection +
+                  '" data-id="' +
+                  esc(r.id) +
+                  '">Sửa</button>') +
               (r.status === "ARCHIVED"
                 ? '<button class="secondary-button" data-action="unarchive" data-collection="' +
                   collection +
                   '" data-id="' +
-                  r.id +
+                  esc(r.id) +
                   '">Hiện lại</button>'
                 : '<button class="danger-button" data-action="archive" data-collection="' +
                   collection +
                   '" data-id="' +
-                  r.id +
+                  esc(r.id) +
                   '">Ẩn</button>') +
               "</div></td></tr>",
           )
           .join("") +
         "</tbody></table></div>"
-      : '<div class="empty"><strong>Chưa có dữ liệu</strong><span>Thêm bản ghi đầu tiên.</span></div>') +
+      : '<div class="empty"><strong>' +
+        (q ? "Không tìm thấy kết quả" : "Chưa có dữ liệu") +
+        "</strong><span>" +
+        (q ? "Thử từ khóa khác." : "Bấm “+ Thêm” để tạo bản ghi đầu tiên.") +
+        "</span></div>") +
     "</div>"
   );
+}
+function eventSummary(e) {
+  const name = e.after?.name || e.before?.name || "";
+  const parts = [];
+  if (e.before && e.after) {
+    for (const k of diffFields(e.before, e.after).slice(0, 4)) {
+      const b = e.before[k],
+        a = e.after[k];
+      parts.push(
+        (typeof a === "object" || typeof b === "object") && k !== "items"
+          ? (FIELD_LABELS[k] || k) + " thay đổi"
+          : (FIELD_LABELS[k] || k) + ": " + fmtVal(k, b) + " → " + fmtVal(k, a),
+      );
+    }
+  } else if (e.after) {
+    if (e.after.total != null) parts.push("Tổng " + money(e.after.total));
+    else if (e.after.price != null) parts.push("Giá " + money(e.after.price));
+    else if (e.after.stock != null && e.entityType === "ingredients")
+      parts.push("Tồn đầu " + e.after.openingStock + " " + unitText(e.after.baseUnit));
+    if (e.after.items?.length) parts.push(itemsText(e.after.items));
+  }
+  if (e.note) parts.push(e.note);
+  return { name, text: parts.join(" · ") || "Thay đổi dữ liệu" };
 }
 function timeline(rows, compact = false) {
   if (!rows.length)
@@ -532,30 +798,37 @@ function timeline(rows, compact = false) {
   return (
     '<div class="timeline">' +
     rows
-      .map(
-        (e) =>
+      .map((e) => {
+        const sum = eventSummary(e);
+        return (
           '<article class="timeline-item"><div class="timeline-date">' +
           dateText(e.timestamp) +
           "</div><div><h3>" +
-          esc(labels[e.entityType] || e.entityType) +
+          esc(ACTION_LABELS[e.action] || e.action) +
           " · " +
-          esc(e.action) +
+          esc(labels[e.entityType] || e.entityType) +
+          (sum.name ? " " + esc(sum.name) : "") +
           "</h3><p>" +
-          esc(
-            e.note || (e.changedFields || []).join(", ") || "Thay đổi dữ liệu",
-          ) +
-          ' · <span class="badge">' +
+          esc(sum.text) +
+          ' <span class="badge ' +
+          (e.source === "AI-Assisted" ? "ai" : "") +
+          '">' +
           esc(e.source || "Manual") +
           '</span></p></div><div class="event-actions"><button class="secondary-button" data-action="event-detail" data-event-id="' +
-          e.eventId +
+          esc(e.eventId) +
           '">Chi tiết</button>' +
-          (!compact && e.before && e.after && e.action !== "RESTORE"
+          (!compact &&
+          ENTITY_COLLECTIONS.includes(e.entityType) &&
+          e.before &&
+          e.after &&
+          e.action !== "RESTORE"
             ? '<button class="secondary-button" data-action="restore-event" data-event-id="' +
-              e.eventId +
+              esc(e.eventId) +
               '">Khôi phục</button>'
             : "") +
-          "</div></article>",
-      )
+          "</div></article>"
+        );
+      })
       .join("") +
     "</div>"
   );
@@ -592,7 +865,10 @@ function historyView() {
       "Thao tác",
       [
         { value: "", label: "Mọi thao tác" },
-        ...Object.keys(ACTIONS).map((a) => ({ value: a, label: a })),
+        ...Object.keys(ACTIONS).map((a) => ({
+          value: a,
+          label: ACTION_LABELS[a] || a,
+        })),
       ],
       state.filters.action,
     ) +
@@ -610,7 +886,7 @@ function historyView() {
     input("history-to", "Đến ngày", state.filters.to, "date") +
     "</div>" +
     (state.filters.entityId
-      ? "<p>Đối tượng: " + esc(state.filters.entityId) + "</p>"
+      ? '<p class="notice">Đang xem lịch sử của một đối tượng. <button class="secondary-button" data-view-link="history">Xem toàn bộ lịch sử</button></p>'
       : "") +
     timeline(rows.slice(0, state.historyLimit)) +
     (repo.historyMore || rows.length > state.historyLimit
@@ -655,19 +931,26 @@ function aiPreview() {
 }
 function backupPreview() {
   const b = state.backupDraft;
+  const diffRowsOf = (c) => {
+    const d = backupDiff(b.collections[c], state.catalog[c]);
+    return [...d.added, ...d.changed];
+  };
+  const groups = ENTITY_COLLECTIONS.map((c) => [c, diffRowsOf(c)]).filter(
+    ([, rows]) => rows.length,
+  );
   return (
     '<div class="notice" data-testid="backup-preview" style="margin-top:12px"><strong>Backup hợp lệ</strong><p>Dataset ' +
     esc(b.datasetId) +
-    " · " +
+    " · tạo lúc " +
     dateText(b.createdAt) +
-    '</p><div class="table-wrap"><table><thead><tr><th>Collection</th><th>Backup</th><th>Hiện tại</th><th>Thêm</th><th>Đổi</th></tr></thead><tbody>' +
+    '</p><div class="table-wrap"><table class="data-table"><thead><tr><th>Dữ liệu</th><th>Backup</th><th>Hiện tại</th><th>Thêm</th><th>Khác</th></tr></thead><tbody>' +
     backupSummary(b, state.catalog)
       .map(
         (r) =>
           '<tr data-row-id="backup-' +
           esc(r.collection) +
           '"><td>' +
-          labels[r.collection] +
+          esc(labels[r.collection]) +
           "</td><td>" +
           r.backup +
           "</td><td>" +
@@ -679,34 +962,47 @@ function backupPreview() {
           "</td></tr>",
       )
       .join("") +
-    "</tbody></table></div><h3>Restore Selected</h3><p>Khôi phục qua nghiệp vụ và bút toán chênh lệch. Cấu hình nguyên liệu giữ tồn đầu hiện tại; phiếu kiểm đã điều chỉnh cần phiếu mới.</p>" +
-    ENTITY_COLLECTIONS.map((c) =>
-      b.collections[c]
-        .map(
-          (r) =>
-            '<div><input type="checkbox" id="selected-' +
-            esc(c) +
-            "-" +
-            esc(r.id) +
-            '" data-backup-selection="' +
-            c +
-            '" data-id="' +
-            esc(r.id) +
-            '" ' +
-            (c === "stockCounts" && r.adjusted ? "disabled" : "") +
-            '><label for="selected-' +
-            esc(c) +
-            "-" +
-            esc(r.id) +
-            '">' +
-            esc(labels[c]) +
-            " · " +
-            esc(r.name || r.id) +
-            "</label></div>",
-        )
-        .join(""),
-    ).join("") +
-    '<div class="toolbar"><button class="secondary-button" data-action="selected-preview">Preview các bản ghi đã chọn</button><button class="primary-button" data-action="confirm-full-restore">Xác nhận Full Restore</button><button class="secondary-button" data-action="cancel-backup">Hủy</button></div></div>'
+    '</tbody></table></div><h3>Khôi phục chọn lọc</h3><p>Chỉ hiển thị bản ghi khác dữ liệu hiện tại. Khôi phục đi qua nghiệp vụ và bút toán chênh lệch. Cấu hình nguyên liệu giữ tồn đầu hiện tại; phiếu kiểm đã điều chỉnh cần phiếu mới.</p>' +
+    (groups.length
+      ? '<div class="toolbar"><button class="secondary-button" data-action="select-all-backup">Chọn tất cả</button><button class="secondary-button" data-action="select-none-backup">Bỏ chọn</button></div>' +
+        groups
+          .map(
+            ([c, rows]) =>
+              '<fieldset class="checklist"><legend>' +
+              esc(labels[c]) +
+              " (" +
+              rows.length +
+              ")</legend>" +
+              rows
+                .map(
+                  (r) =>
+                    '<div class="check-row"><input type="checkbox" id="selected-' +
+                    esc(c) +
+                    "-" +
+                    esc(r.id) +
+                    '" data-backup-selection="' +
+                    c +
+                    '" data-id="' +
+                    esc(r.id) +
+                    '" ' +
+                    (c === "stockCounts" && r.adjusted ? "disabled" : "") +
+                    '><label for="selected-' +
+                    esc(c) +
+                    "-" +
+                    esc(r.id) +
+                    '">' +
+                    esc(r.name || r.id) +
+                    (c === "stockCounts" && r.adjusted
+                      ? " (đã điều chỉnh — không restore trực tiếp)"
+                      : "") +
+                    "</label></div>",
+                )
+                .join("") +
+              "</fieldset>",
+          )
+          .join("")
+      : '<p class="muted">Backup giống hệt dữ liệu hiện tại — không có gì để khôi phục chọn lọc.</p>') +
+    '<div class="toolbar" style="margin-top:14px"><button class="primary-button" data-action="selected-preview">Xem trước các bản ghi đã chọn</button><button class="danger-button" data-action="confirm-full-restore">Full Restore (thay toàn bộ)</button><button class="secondary-button" data-action="cancel-backup">Hủy</button></div></div>'
   );
 }
 async function previewSelected() {
@@ -758,19 +1054,191 @@ async function previewSelected() {
         const ing = catalog.ingredients.find(
           (i) => i.id === impact.ingredientId,
         );
-        ing.stock += impact.quantity;
+        if (ing) ing.stock += impact.quantity;
       }
     }
   showRestorePreview(plans);
 }
-function formFields(collection, data = {}) {
-  const menuOpts = (state.catalog.menuItems || [])
-    .filter((m) => m.status === "ACTIVE" || m.id === data.menuItemId)
-    .map((m) => ({ value: m.id, label: m.name + " · " + money(m.price) }));
-  const ingOpts = activeRows("ingredients").map((i) => ({
-    value: i.id,
-    label: i.name + " (" + i.baseUnit + ")",
+// Structured line-item editor (replaces raw JSON textareas).
+const ITEM_KIND = {
+  recipes: { main: "ingredient", label: "Nguyên liệu", qty: "Định lượng" },
+  purchaseReceipts: {
+    main: "ingredient",
+    label: "Nguyên liệu nhập",
+    qty: "Số lượng",
+    unit: true,
+    cost: true,
+  },
+  stockCounts: {
+    main: "ingredient",
+    label: "Nguyên liệu kiểm",
+    qty: "Tồn thực tế",
+    unit: true,
+  },
+  sales: { main: "menu", label: "Món", qty: "Số lượng" },
+};
+function rawItems(items = []) {
+  return items.map((i) => ({
+    main: i.menuItemId || i.ingredientId || "",
+    qty: i.quantity ?? i.actual ?? "",
+    unit: i.unit || "",
+    cost: i.unitCost ?? "",
   }));
+}
+function unitChoices(ing) {
+  if (!ing) return [{ value: "", label: "—" }];
+  const o = [{ value: ing.baseUnit, label: unitText(ing.baseUnit) }];
+  if (ing.baseUnit === "g") o.push({ value: "kg", label: "kg" });
+  if (ing.baseUnit === "ml") o.push({ value: "l", label: "lít" });
+  if (ing.packageSize > 0) o.push({ value: "package", label: "chai/hộp" });
+  return o;
+}
+// Active rows plus the currently selected one (which may be archived).
+const selectable = (collection, keepId) =>
+  (state.catalog[collection] || []).filter(
+    (r) => r.status === "ACTIVE" || r.id === keepId,
+  );
+function itemRow(collection, n, row) {
+  const k = ITEM_KIND[collection];
+  const opts = selectable(k.main === "menu" ? "menuItems" : "ingredients", row.main);
+  const ing = k.main === "ingredient" ? ingredientById(row.main) : null;
+  const options = [
+    '<option value="">— Chọn ' + (k.main === "menu" ? "món" : "nguyên liệu") + " —</option>",
+    ...opts.map(
+      (o) =>
+        '<option value="' +
+        esc(o.id) +
+        '"' +
+        (o.id === row.main ? " selected" : "") +
+        ">" +
+        esc(o.name) +
+        "</option>",
+    ),
+  ].join("");
+  const no = n + 1;
+  return (
+    '<div class="item-row" role="group" aria-label="Dòng ' +
+    no +
+    '"><select class="select item-main" id="item-' +
+    n +
+    '-main" aria-label="' +
+    k.label +
+    " dòng " +
+    no +
+    '">' +
+    options +
+    '</select><input class="input item-qty" id="item-' +
+    n +
+    '-qty" type="number" min="0" step="any" inputmode="decimal" placeholder="' +
+    k.qty +
+    '" aria-label="' +
+    k.qty +
+    " dòng " +
+    no +
+    '" value="' +
+    esc(row.qty) +
+    '">' +
+    (k.unit
+      ? '<select class="select item-unit" id="item-' +
+        n +
+        '-unit" aria-label="Đơn vị dòng ' +
+        no +
+        '">' +
+        unitChoices(ing)
+          .map(
+            (u) =>
+              '<option value="' +
+              esc(u.value) +
+              '"' +
+              ((row.unit || ing?.baseUnit) === u.value ? " selected" : "") +
+              ">" +
+              esc(u.label) +
+              "</option>",
+          )
+          .join("") +
+        "</select>"
+      : k.main === "ingredient" && ing
+        ? '<span class="item-unit-text">' + esc(unitText(ing.baseUnit)) + "</span>"
+        : "") +
+    (k.cost
+      ? '<input class="input item-cost" id="item-' +
+        n +
+        '-cost" type="number" min="0" step="any" inputmode="decimal" placeholder="Giá / đơn vị" aria-label="Giá nhập dòng ' +
+        no +
+        '" value="' +
+        esc(row.cost) +
+        '">'
+      : "") +
+    '<button type="button" class="danger-button" data-item-op="remove" data-index="' +
+    n +
+    '" aria-label="Xóa dòng ' +
+    no +
+    '">Xóa</button></div>'
+  );
+}
+function itemRowsHtml(collection, rows) {
+  return (
+    rows.map((r, n) => itemRow(collection, n, r)).join("") ||
+    '<p class="muted">Chưa có dòng nào. Bấm “+ Thêm dòng”.</p>'
+  );
+}
+function itemsEditor(collection, rows) {
+  const list = rows.length ? rows : [{ main: "", qty: "", unit: "", cost: "" }];
+  return (
+    '<div class="field full" role="group" aria-labelledby="items-title"><span class="field-title" id="items-title">Chi tiết</span><div id="items-editor" data-collection="' +
+    collection +
+    '">' +
+    itemRowsHtml(collection, list) +
+    '</div><div><button type="button" class="secondary-button" data-item-op="add">+ Thêm dòng</button></div></div>'
+  );
+}
+function readRawRows() {
+  return [...document.querySelectorAll("#items-editor .item-row")].map(
+    (r) => ({
+      main: r.querySelector(".item-main")?.value || "",
+      qty: r.querySelector(".item-qty")?.value ?? "",
+      unit: r.querySelector(".item-unit")?.value || "",
+      cost: r.querySelector(".item-cost")?.value ?? "",
+    }),
+  );
+}
+function redrawItems(rows) {
+  const el = document.querySelector("#items-editor");
+  el.innerHTML = itemRowsHtml(el.dataset.collection, rows);
+  decorateControls();
+}
+function readItems(collection) {
+  return readRawRows().map((r) => {
+    if (!r.main) throw new BusinessError("Mỗi dòng cần chọn một mục.");
+    if (collection === "sales")
+      return { menuItemId: r.main, quantity: r.qty };
+    if (collection === "recipes")
+      return { ingredientId: r.main, quantity: r.qty };
+    if (collection === "stockCounts")
+      return { ingredientId: r.main, actual: r.qty, unit: r.unit || undefined };
+    return {
+      ingredientId: r.main,
+      quantity: r.qty,
+      unit: r.unit || undefined,
+      unitCost: r.cost === "" ? 0 : r.cost,
+    };
+  });
+}
+function formFields(collection, data = {}) {
+  const menuOpts = [
+    { value: "", label: "— Chọn món —" },
+    ...selectable("menuItems", data.menuItemId).map((m) => ({
+      value: m.id,
+      label: m.name + " · " + money(m.price),
+    })),
+  ];
+  const ingOpts = [
+    { value: "", label: "— Chọn nguyên liệu —" },
+    ...selectable("ingredients", data.ingredientId).map((i) => ({
+      value: i.id,
+      label: i.name + " (" + unitText(i.baseUnit) + ")",
+    })),
+  ];
   if (collection === "menuItems")
     return (
       input("entity-name", "Tên món", data.name) +
@@ -806,11 +1274,7 @@ function formFields(collection, data = {}) {
       select(
         "entity-base-unit",
         "Đơn vị chuẩn",
-        [
-          { value: "g", label: "g" },
-          { value: "ml", label: "ml" },
-          { value: "unit", label: "đơn vị" },
-        ],
+        ["g", "ml", "unit"].map((u) => ({ value: u, label: unitText(u) })),
         data.baseUnit || "g",
       ) +
       input(
@@ -851,11 +1315,7 @@ function formFields(collection, data = {}) {
   if (collection === "recipes")
     return (
       select("entity-menu-id", "Món", menuOpts, data.menuItemId) +
-      textarea(
-        "entity-items",
-        "Định lượng JSON",
-        JSON.stringify(data.items || [], null, 2),
-      ) +
+      itemsEditor("recipes", rawItems(data.items)) +
       select(
         "entity-status",
         "Trạng thái",
@@ -870,35 +1330,23 @@ function formFields(collection, data = {}) {
     return (
       input("entity-date", "Ngày bán", data.date || state.salesDate, "date") +
       input("entity-invoice", "Mã hóa đơn", data.invoiceNo || "") +
-      textarea(
-        "entity-items",
-        "Items JSON",
-        JSON.stringify(data.items || [], null, 2),
-      ) +
+      itemsEditor("sales", rawItems(data.items)) +
       textarea("entity-note", "Ghi chú", data.note || "")
     );
   if (collection === "purchaseReceipts")
     return (
       input("entity-date", "Ngày nhập", data.date || state.salesDate, "date") +
-      textarea(
-        "entity-items",
-        "Items JSON",
-        JSON.stringify(data.items || [], null, 2),
-      ) +
+      itemsEditor("purchaseReceipts", rawItems(data.items)) +
       textarea("entity-note", "Ghi chú", data.note || "")
     );
   if (collection === "stockCounts")
     return (
       input("entity-date", "Ngày kiểm", data.date || state.salesDate, "date") +
-      textarea(
-        "entity-items",
-        "Items JSON",
-        JSON.stringify(data.items || [], null, 2),
-      ) +
+      itemsEditor("stockCounts", rawItems(data.items)) +
       textarea("entity-note", "Ghi chú", data.note || "")
     );
   return (
-    input("entity-ingredient-id", "Nguyên liệu", data.ingredientId || "") +
+    select("entity-ingredient-id", "Nguyên liệu", ingOpts, data.ingredientId || "") +
     input("entity-minimum-stock", "Ngưỡng", data.minimumStock || 0, "number") +
     textarea("entity-note", "Ghi chú", data.note || "")
   );
@@ -926,7 +1374,7 @@ function readForm(collection) {
       englishName: val("entity-english"),
       code: val("entity-code"),
       group: val("entity-group"),
-      price: Number(val("entity-price")),
+      price: val("entity-price"),
       unit: val("entity-unit"),
       aliases: val("entity-aliases")
         .split("\n")
@@ -938,41 +1386,41 @@ function readForm(collection) {
     Object.assign(data, {
       name: val("entity-name"),
       baseUnit: val("entity-base-unit"),
-      packageSize: Number(val("entity-package-size")),
-      openingStock: Number(val("entity-opening-stock")),
-      minimumStock: Number(val("entity-minimum-stock")),
-      unitCost: Number(val("entity-unit-cost")),
+      packageSize: val("entity-package-size"),
+      openingStock: val("entity-opening-stock"),
+      minimumStock: val("entity-minimum-stock"),
+      unitCost: val("entity-unit-cost"),
       status: val("entity-status"),
     });
   else if (collection === "recipes")
     Object.assign(data, {
       menuItemId: val("entity-menu-id"),
-      items: JSON.parse(val("entity-items") || "[]"),
+      items: readItems("recipes"),
       status: val("entity-status"),
     });
   else if (collection === "sales")
     Object.assign(data, {
       date: val("entity-date"),
       invoiceNo: val("entity-invoice"),
-      items: JSON.parse(val("entity-items") || "[]"),
+      items: readItems("sales"),
       note: val("entity-note"),
     });
   else if (collection === "purchaseReceipts")
     Object.assign(data, {
       date: val("entity-date"),
-      items: JSON.parse(val("entity-items") || "[]"),
+      items: readItems("purchaseReceipts"),
       note: val("entity-note"),
     });
   else if (collection === "stockCounts")
     Object.assign(data, {
       date: val("entity-date"),
-      items: JSON.parse(val("entity-items") || "[]"),
+      items: readItems("stockCounts"),
       note: val("entity-note"),
     });
   else
     Object.assign(data, {
       ingredientId: val("entity-ingredient-id"),
-      minimumStock: Number(val("entity-minimum-stock")),
+      minimumStock: val("entity-minimum-stock"),
       note: val("entity-note"),
     });
   return data;
@@ -1028,8 +1476,9 @@ async function restoreEvent(event, target = "before") {
 }
 function showRestorePreview(plans) {
   state.restorePlans = plans;
-  document.querySelector("#detailTitle").textContent = "Preview khôi phục";
+  document.querySelector("#detailTitle").textContent = "Xem trước khôi phục";
   document.querySelector("#detailBody").innerHTML =
+    '<p class="notice">Chưa có gì được ghi. Kiểm tra thay đổi bên dưới rồi bấm “Xác nhận khôi phục”.</p>' +
     plans
       .map(
         (p) =>
@@ -1037,15 +1486,14 @@ function showRestorePreview(plans) {
           esc(labels[p.collection]) +
           " · " +
           esc(p.after.name || p.id) +
-          '</h3><div class="diff-grid"><div class="diff-pane"><h3>Hiện tại</h3><pre>' +
-          esc(JSON.stringify(p.before, null, 2)) +
-          '</pre></div><div class="diff-pane"><h3>Sẽ khôi phục</h3><pre>' +
-          esc(JSON.stringify(p.after, null, 2)) +
-          "</pre></div></div><p>Chênh lệch kho: " +
-          esc(JSON.stringify(p.impacts)) +
-          '</p><p class="notice warning">' +
-          esc(p.warnings.join(" · ") || "Không có cảnh báo tồn kho.") +
-          "</p>",
+          "</h3>" +
+          diffTable(p.before, p.after) +
+          "<h4>Ảnh hưởng tới kho</h4>" +
+          impactList(p.impacts) +
+          (p.warnings.length
+            ? '<p class="notice warning">' + esc(p.warnings.join(" · ")) + "</p>"
+            : "") +
+          rawDetails({ hienTai: p.before, sauKhoiPhuc: p.after }),
       )
       .join("") +
     (plans.some((p) => p.requiresReason)
@@ -1056,7 +1504,7 @@ function showRestorePreview(plans) {
           "required",
         )
       : "") +
-    '<button class="primary-button" data-action="confirm-restore">Xác nhận khôi phục</button><button class="secondary-button" data-action="cancel-restore">Hủy</button>';
+    '<div class="toolbar sticky-actions"><button class="primary-button" data-action="confirm-restore">Xác nhận khôi phục</button><button class="secondary-button" data-action="cancel-restore">Hủy</button></div>';
   decorateControls();
   if (!document.querySelector("#detailDialog").open)
     document.querySelector("#detailDialog").showModal();
@@ -1075,35 +1523,47 @@ async function confirmRestore() {
   toast("Đã tạo phiên bản RESTORE và ghi bút toán chênh lệch.");
 }
 function eventDetail(event) {
+  if (!event) return;
   state.selectedEvent = event;
+  const sum = eventSummary(event);
   document.querySelector("#detailTitle").textContent =
-    (labels[event.entityType] || event.entityType) + " · " + event.action;
+    (ACTION_LABELS[event.action] || event.action) +
+    " · " +
+    (labels[event.entityType] || event.entityType) +
+    (sum.name ? " " + sum.name : "");
   document.querySelector("#detailBody").innerHTML =
     "<p>" +
     dateText(event.timestamp) +
-    " · " +
+    ' · <span class="badge ' +
+    (event.source === "AI-Assisted" ? "ai" : "") +
+    '">' +
     esc(event.source) +
-    "</p><p>" +
+    "</span></p><p>" +
     esc(event.note || "Không có ghi chú") +
-    '</p><div class="diff-grid"><div class="diff-pane"><h3>Trước</h3><pre>' +
-    esc(JSON.stringify(event.before, null, 2)) +
-    '</pre></div><div class="diff-pane"><h3>Sau</h3><pre>' +
-    esc(JSON.stringify(event.after, null, 2)) +
-    "</pre></div></div><h3>Biến động kho</h3><pre>" +
-    esc(JSON.stringify(event.stockImpact || [], null, 2)) +
-    "</pre>" +
+    "</p><h4>Thay đổi (trước → sau)</h4>" +
+    (event.before || event.after
+      ? diffTable(event.before, event.after)
+      : '<p class="muted">Không có dữ liệu.</p>') +
+    "<h4>Biến động kho liên quan</h4>" +
+    impactList(event.stockImpact) +
+    rawDetails({ truoc: event.before, sau: event.after }) +
     (ENTITY_COLLECTIONS.includes(event.entityType)
-      ? (event.before
+      ? '<div class="toolbar sticky-actions">' +
+        (event.before
           ? '<button class="secondary-button" data-action="restore-event" data-event-id="' +
             esc(event.eventId) +
             '">Khôi phục phiên bản trước</button>'
           : "") +
-        '<button class="secondary-button" data-action="restore-event" data-target="after" data-event-id="' +
-        esc(event.eventId) +
-        '">Khôi phục phiên bản này</button>'
+        (event.after
+          ? '<button class="secondary-button" data-action="restore-event" data-target="after" data-event-id="' +
+            esc(event.eventId) +
+            '">Khôi phục phiên bản này</button>'
+          : "") +
+        "</div>"
       : "");
   decorateControls();
-  document.querySelector("#detailDialog").showModal();
+  const d = document.querySelector("#detailDialog");
+  if (!d.open) d.showModal();
 }
 async function versionHistory(collection, id) {
   const rows =
@@ -1125,9 +1585,13 @@ async function versionHistory(collection, id) {
           v.version +
           " · " +
           dateText(v.createdAt) +
-          "</h3><pre>" +
-          esc(JSON.stringify(v.data, null, 2)) +
-          '</pre><button class="secondary-button" data-action="restore-version" data-id="' +
+          "</h3>" +
+          (v.data?.name ? "<p><strong>" + esc(v.data.name) + "</strong></p>" : "") +
+          diffTable(
+            rows.find((x) => x.version === v.version - 1)?.data || null,
+            v.data,
+          ) +
+          '<button class="secondary-button" data-action="restore-version" data-id="' +
           esc(v.id) +
           '">Khôi phục v' +
           v.version +
@@ -1140,36 +1604,42 @@ async function versionHistory(collection, id) {
 async function exportBackup() {
   try {
     const b = await repo.backup((c, n) =>
-        status("Sao lưu " + c + " · " + n + " bản ghi"),
-      ),
-      blob = new Blob([JSON.stringify(b, null, 2)], {
-        type: "application/json",
-      }),
-      a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download =
-      "LE_CORNER_Backup_" +
-      new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-") +
-      ".json";
-    a.click();
-    URL.revokeObjectURL(a.href);
+      status("Sao lưu " + labels[c] + " · " + n + " bản ghi"),
+    );
+    const counts = COLLECTIONS.map((c) => [c, b.collections[c]?.length || 0]);
+    const total = counts.reduce((sum, [, n]) => sum + n, 0);
+    const name = "LE_CORNER_Backup_" + localStamp() + ".json";
+    downloadJSON(b, name);
     document.querySelector("#backup-result").innerHTML =
-      '<div class=\"notice\" style=\"margin-top:12px\">Đã xuất ' +
+      '<div class="notice" style="margin-top:12px"><strong>Đã xuất ' +
+      esc(name) +
+      "</strong><br>" +
       COLLECTIONS.length +
-      " collection · SHA-256 " +
-      esc(b.checksum) +
+      " collection · " +
+      total +
+      " bản ghi · SHA-256 " +
+      esc(String(b.checksum).slice(0, 16)) +
+      "…" +
+      rawDetails(Object.fromEntries(counts), "Chi tiết từng collection") +
       "</div>";
-    toast("Đã tạo backup JSON.");
+    status("Đã sao lưu " + dateText(now()));
+    toast("Đã tạo backup JSON (" + total + " bản ghi).");
   } catch (e) {
-    toast(e.message || "Backup thất bại.", true);
+    status("Sao lưu thất bại");
+    toast(e.message || "Backup thất bại — file chưa được tạo.", true);
   }
 }
 async function readBackup(file) {
   try {
     if (file.size > 20 * 1024 * 1024)
       throw new BusinessError("Backup tối đa 20 MB.");
-    const b = JSON.parse(await file.text()),
-      check = await validateBackup(b);
+    let b;
+    try {
+      b = JSON.parse(await file.text());
+    } catch {
+      throw new BusinessError("File không phải JSON hợp lệ.");
+    }
+    const check = await validateBackup(b);
     if (!check.ok) throw new BusinessError(check.errors.slice(0, 8).join(" "));
     state.backupDraft = b;
     render();
@@ -1190,7 +1660,7 @@ async function fullRestore() {
     return;
   try {
     const safety = await repo.backup();
-    downloadJSON(safety, "LE_CORNER_Safety_" + Date.now() + ".json");
+    downloadJSON(safety, "LE_CORNER_Safety_" + localStamp() + ".json");
     status("Đang restore theo batch...");
     await repo.fullRestore(state.backupDraft, (c, n) =>
       status("Khôi phục " + c + " · " + n + " bản ghi"),
@@ -1205,7 +1675,12 @@ async function fullRestore() {
 }
 async function validateAI(text, place) {
   try {
-    const payload = JSON.parse(text);
+    let payload;
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      throw new BusinessError("Nội dung dán vào không phải JSON hợp lệ.");
+    }
     const plans = buildBatch(payload, state.catalog).map((p) => ({
       ...p,
       datasetId: repo.datasetId,
@@ -1259,7 +1734,10 @@ function addCart() {
     document.querySelector("#sale-date")?.value || state.salesDate;
   state.salesInvoice = document.querySelector("#invoice-number")?.value || "";
   state.salesSearch = document.querySelector("#menu-search")?.value || "";
+  state.saleQty = 1;
+  state.selectedMenu = "";
   render();
+  toast("Đã thêm " + menu.name + " × " + qty);
 }
 async function saveSale() {
   try {
@@ -1286,26 +1764,14 @@ async function saveSale() {
 document.querySelector("#mainNav").addEventListener("click", (e) => {
   const b = e.target.closest("[data-view]");
   if (!b) return;
-  state.view = b.dataset.view;
-  state.filters = {
-    q: "",
-    entity: "",
-    action: "",
-    source: "",
-    from: "",
-    to: "",
-    entityId: "",
-  };
-  state.historyLimit = 50;
-  document.querySelector(".sidebar").classList.remove("open");
-  render();
+  navigate(b.dataset.view);
+  syncSidebar();
 });
 async function handleAction(e) {
   const t = e.target.closest("[data-action],[data-view-link]");
   if (!t || state.busy) return;
   if (t.dataset.viewLink) {
-    state.view = t.dataset.viewLink;
-    render();
+    navigate(t.dataset.viewLink);
     return;
   }
   const a = t.dataset.action;
@@ -1317,10 +1783,10 @@ async function handleAction(e) {
     if (a === "versions")
       await versionHistory(t.dataset.collection, t.dataset.id);
     if (a === "entity-history") {
-      state.view = "history";
-      state.filters.entity = t.dataset.collection;
-      state.filters.entityId = t.dataset.id;
-      render();
+      navigate("history", {
+        entity: t.dataset.collection,
+        entityId: t.dataset.id,
+      });
     }
     if (a === "archive" || a === "unarchive") {
       const before = await repo.get(t.dataset.collection, t.dataset.id);
@@ -1342,7 +1808,7 @@ async function handleAction(e) {
       });
       if (
         await askConfirm(
-          "Áp dụng chênh lệch kiểm kê: " + JSON.stringify(plan.impacts) + "?",
+          "Áp dụng chênh lệch kiểm kê: " + impactPlain(plan.impacts) + "?",
         )
       )
         await commitPlan(plan);
@@ -1397,6 +1863,11 @@ async function handleAction(e) {
       render();
     }
     if (a === "export-backup") await exportBackup();
+    if (a === "select-all-backup" || a === "select-none-backup")
+      for (const box of document.querySelectorAll(
+        "[data-backup-selection]:not(:disabled)",
+      ))
+        box.checked = a === "select-all-backup";
     if (a === "confirm-full-restore") await fullRestore();
     if (a === "selected-preview") await previewSelected();
     if (a === "cancel-backup") {
@@ -1435,6 +1906,13 @@ document.querySelector("#view").addEventListener("input", (e) => {
   }
   if (e.target.id === "sale-date") state.salesDate = e.target.value;
   if (e.target.id === "invoice-number") state.salesInvoice = e.target.value;
+  if (e.target.id === "sale-quantity") state.saleQty = e.target.value;
+});
+document.querySelector("#view").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && e.target.id === "sale-quantity") {
+    e.preventDefault();
+    addCart();
+  }
 });
 document.querySelector("#view").addEventListener("change", async (e) => {
   try {
@@ -1443,19 +1921,40 @@ document.querySelector("#view").addEventListener("change", async (e) => {
       return;
     }
     if (e.target.matches("[data-backup-selection]")) return;
-    if (e.target.id === "menu-item-select") state.selectedMenu = e.target.value;
+    if (e.target.id === "menu-item-select") {
+      state.selectedMenu = e.target.value;
+      return;
+    }
+    let changed = false;
     for (const key of ["entity", "action", "source", "from", "to"])
       if (e.target.id === "history-" + key) {
         state.filters[key] = e.target.value;
         state.historyLimit = 50;
+        changed = true;
       }
-    if (["sale-date", "invoice-number"].includes(e.target.id)) return;
-    render();
+    if (changed) render();
   } catch (err) {
     toast(err.message, true);
   }
 });
 document.querySelector("#entityForm").addEventListener("submit", saveEditor);
+document.querySelector("#dialogFields").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-item-op]");
+  if (!b) return;
+  const rows = readRawRows();
+  if (b.dataset.itemOp === "add")
+    rows.push({ main: "", qty: "", unit: "", cost: "" });
+  else rows.splice(Number(b.dataset.index), 1);
+  redrawItems(rows);
+});
+document.querySelector("#dialogFields").addEventListener("change", (e) => {
+  if (!e.target.classList.contains("item-main")) return;
+  const rows = readRawRows();
+  const n = Number(e.target.id.split("-")[1]);
+  rows[n].unit = "";
+  redrawItems(rows);
+  document.getElementById("item-" + n + "-qty")?.focus();
+});
 document
   .querySelector("#closeDialog")
   .addEventListener("click", () =>

@@ -118,3 +118,19 @@ test("malformed nested backup and null metadata return validation errors", async
     /lớn hơn 0/,
   );
 });
+
+test("backupDiff ignores dataset metadata but detects content changes", async () => {
+  const { backupDiff } = await import("../js/domain.js");
+  const live = [
+    { id: "a", name: "X", datasetId: "new", version: 3 },
+    { id: "b", name: "Y", datasetId: "new", version: 1 },
+  ];
+  const backup = [
+    { id: "a", name: "X", datasetId: "old", version: 1 },
+    { id: "b", name: "Z", datasetId: "old", version: 1 },
+    { id: "c", name: "W", datasetId: "old", version: 1 },
+  ];
+  const d = backupDiff(backup, live);
+  assert.deepEqual(d.changed.map((r) => r.id), ["b"]);
+  assert.deepEqual(d.added.map((r) => r.id), ["c"]);
+});

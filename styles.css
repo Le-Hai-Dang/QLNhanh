@@ -702,3 +702,139 @@ pre {
   max-width: 100%;
   min-width: 0;
 }
+
+/* --- UX fixes --- */
+.toast {
+  top: auto;
+  left: auto;
+  margin: 0;
+  border: 0;
+  width: auto;
+  height: auto;
+  overflow: visible;
+}
+#confirmationMessage {
+  white-space: pre-line;
+}
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+.data-table td.wrap {
+  white-space: normal;
+  min-width: 140px;
+}
+.data-table .summary-cell {
+  max-width: 340px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.row-actions {
+  gap: 6px;
+  min-width: 220px;
+}
+.row-actions button {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.badge.ai {
+  background: #e7efff;
+  color: #2f5aa8;
+}
+.item-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(90px, 1fr) auto auto auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.item-row .item-main {
+  min-width: 0;
+}
+.item-unit-text {
+  color: var(--muted);
+  font-size: 13px;
+  min-width: 40px;
+}
+.field-title {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+.checklist {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin: 12px 0;
+  padding: 8px 12px;
+  max-height: 240px;
+  overflow: auto;
+}
+.checklist legend {
+  font-weight: 600;
+  font-size: 13px;
+  padding: 0 6px;
+}
+.check-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+}
+.check-row input {
+  width: 20px;
+  height: 20px;
+}
+.check-row label {
+  flex: 1;
+  cursor: pointer;
+}
+.impact-list {
+  margin: 6px 0 12px;
+  padding-left: 20px;
+}
+.diff-table td.wrap {
+  max-width: 320px;
+}
+.sticky-actions {
+  position: sticky;
+  bottom: -24px;
+  background: #fff;
+  padding: 14px 0 4px;
+  margin-top: 14px;
+  border-top: 1px solid var(--line);
+}
+details {
+  margin: 10px 0;
+}
+summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+}
+.primary-button,
+.secondary-button,
+.danger-button {
+  min-height: 42px;
+}
+@media (max-width: 680px) {
+  .item-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .item-row .item-main {
+    grid-column: 1 / -1;
+  }
+  .topbar {
+    flex-wrap: wrap;
+  }
+  .toast {
+    right: 16px;
+    left: 16px;
+    bottom: 16px;
+  }
+  .dialog form,
+  .dialog > div {
+    padding: 16px;
+  }
+}

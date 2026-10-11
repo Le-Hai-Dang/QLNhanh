@@ -696,18 +696,42 @@ export async function validateBackup(backup) {
   }
   return { ok: !errors.length, errors };
 }
+const CONTENT_META = [
+  "datasetId",
+  "version",
+  "createdAt",
+  "updatedAt",
+  "updatedSeq",
+  "lastEventId",
+  "lastCountAdjustmentSeq",
+];
+// Business content of a row, without per-dataset bookkeeping that always differs after a restore.
+export function contentKey(row) {
+  const copy = { ...row };
+  for (const k of CONTENT_META) delete copy[k];
+  return canonical(copy);
+}
+export function backupDiff(backupRows, liveRows) {
+  const live = new Map((liveRows || []).map((r) => [r.id, contentKey(r)]));
+  const added = [],
+    changed = [];
+  for (const r of backupRows) {
+    if (!live.has(r.id)) added.push(r);
+    else if (live.get(r.id) !== contentKey(r)) changed.push(r);
+  }
+  return { added, changed };
+}
 export function backupSummary(backup, current) {
   return ENTITY_COLLECTIONS.map((collection) => {
     const rows = backup.collections[collection],
-      live = current[collection] || [];
+      live = current[collection] || [],
+      diff = backupDiff(rows, live);
     return {
       collection,
       backup: rows.length,
       current: live.length,
-      added: rows.filter((r) => !live.some((l) => l.id === r.id)).length,
-      changed: rows.filter((r) =>
-        live.some((l) => l.id === r.id && canonical(l) !== canonical(r)),
-      ).length,
+      added: diff.added.length,
+      changed: diff.changed.length,
     };
   });
 }
