@@ -627,6 +627,7 @@ function salesView() {
               (inCart(m.id)
                 ? '<span class="tile-count">×' + inCart(m.id) + "</span>"
                 : "") +
+              (recipeFor(m.id) ? "" : '<small class="muted">Chưa có công thức</small>') +
               "</button>",
           )
           .join("") +
@@ -680,7 +681,11 @@ function salesView() {
 }
 function rowSummary(collection, r) {
   if (collection === "menuItems")
-    return [money(r.price), r.group, itemsText(recipeFor(r.id)?.items)]
+    return [
+      money(r.price),
+      r.group,
+      itemsText(recipeFor(r.id)?.items) || "Chưa có công thức",
+    ]
       .filter(Boolean)
       .join(" · ");
   if (collection === "ingredients")
@@ -1242,7 +1247,10 @@ function redrawItems(rows) {
   decorateControls();
 }
 function readItems(collection) {
-  return readRawRows().map((r) => {
+  const blank = (r) => !r.main && r.qty === "" && r.cost === "";
+  return readRawRows()
+    .filter((r) => collection !== "recipes" || !blank(r))
+    .map((r) => {
     if (!r.main) throw new BusinessError("Mỗi dòng cần chọn một mục.");
     if (collection === "sales")
       return { menuItemId: r.main, quantity: r.qty };
@@ -1293,7 +1301,7 @@ function formFields(collection, data = {}) {
       itemsEditor(
         "recipes",
         rawItems(data.recipeItems),
-        "Thành phần cho 1 " + (data.unit || "ly"),
+        "Thành phần cho 1 " + (data.unit || "ly") + " (có thể để trống, bổ sung sau)",
       )
     );
   if (collection === "ingredients")
@@ -1440,16 +1448,18 @@ async function saveMenuWithRecipe(id, before) {
   const menuId = id || uid();
   const form = readForm("menuItems");
   const items = readItems("recipes");
-  if (!items.length)
-    throw new BusinessError("Món cần ít nhất một thành phần và định lượng.");
+  const oldRecipe = recipeFor(menuId);
+  if (!items.length && oldRecipe)
+    throw new BusinessError(
+      "Món đã có công thức: giữ ít nhất một thành phần hoặc dùng “Ẩn” món.",
+    );
   const menuPlan = planFromForm("menuItems", menuId, form, before);
   const draft = clone(state.catalog);
   draft.menuItems = [
     ...(draft.menuItems || []).filter((m) => m.id !== menuId),
     { ...menuPlan.after, id: menuId, version: menuPlan.expectedVersion + 1 },
   ];
-  const oldRecipe = recipeFor(menuId);
-  const recipePlan = {
+  const recipePlan = items.length && {
     ...previewChange(
       {
         collection: "recipes",
@@ -1468,14 +1478,15 @@ async function saveMenuWithRecipe(id, before) {
     datasetId: repo.datasetId,
   };
   const sameItems =
-    oldRecipe &&
+    !items.length ||
+    (oldRecipe &&
     canonical(oldRecipe.items.map((i) => [i.ingredientId, i.quantity])) ===
-      canonical(recipePlan.after.items.map((i) => [i.ingredientId, i.quantity]));
+      canonical(recipePlan.after.items.map((i) => [i.ingredientId, i.quantity])));
   const plans = [];
   if (!before || diffFields(before, menuPlan.after).length) plans.push(menuPlan);
   if (!sameItems) plans.push(recipePlan);
   if (!plans.length) throw new BusinessError("Không có thay đổi để lưu.");
-  await commitPlans(plans, "Đã lưu món " + menuPlan.after.name + " cùng thành phần.");
+  await commitPlans(plans, "Đã lưu món " + menuPlan.after.name + (items.length ? " cùng thành phần." : " (chưa có công thức)."));
 }
 async function applyCount(id) {
   const before = await repo.get("stockCounts", id);
