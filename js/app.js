@@ -1,4 +1,9 @@
-import { MemoryRepository, FirestoreRepository } from "./repository.js";
+import {
+  MemoryRepository,
+  FirestoreRepository,
+  makeBackup,
+  emptyCatalog,
+} from "./repository.js";
 import {
   ENTITY_COLLECTIONS,
   COLLECTIONS,
@@ -926,7 +931,9 @@ function backupView() {
     esc(repo.datasetId) +
     '</strong>, giữ ID/liên kết, không chứa credential/token.</p><button class="primary-button" data-action="export-backup" data-testid="export-backup">Tạo file JSON</button><div id="backup-result"></div></div><div class="card"><h2>Nhập & preview</h2><p>Chọn JSON để kiểm tra schema, SHA-256, liên kết và số lượng thay đổi.</p><div class="drop-zone"><label for="backup-file">Chọn file backup</label><input id="backup-file" data-testid="backup-file" type="file" accept=".json,application/json"></div><div id="backup-preview">' +
     (state.backupDraft ? backupPreview() : "") +
-    "</div></div></div>"
+    '</div></div></div><div class="card reset-card"><h2>Bắt đầu dữ liệu thật</h2><p>Xóa sạch dữ liệu thử (món, nguyên liệu, hóa đơn, kho, lịch sử) để nhập menu thật. Hiện có <strong>' +
+    ENTITY_COLLECTIONS.reduce((n, c) => n + (state.catalog[c] || []).length, 0) +
+    '</strong> bản ghi nghiệp vụ. App sẽ tự tải file sao lưu dữ liệu hiện tại, rồi chuyển sang một bộ dữ liệu mới trống. Bộ cũ không bị xóa vật lý nên vẫn khôi phục được bằng file sao lưu.</p><div class="field"><label for="reset-confirm">Gõ XOA để xác nhận</label><input class="input" id="reset-confirm" autocomplete="off" placeholder="XOA"></div><div class="toolbar" style="margin-top:12px"><button class="danger-button" data-action="reset-data" data-testid="reset-data">Xóa sạch &amp; bắt đầu lại</button></div></div>'
   );
 }
 function aiPreview() {
@@ -1709,6 +1716,26 @@ async function readBackup(file) {
     toast(e.message || "Backup không hợp lệ.", "error");
   }
 }
+async function resetData() {
+  if (normalize(document.querySelector("#reset-confirm")?.value) !== "xoa")
+    throw new BusinessError("Gõ XOA vào ô xác nhận trước khi xóa sạch.");
+  if (
+    !(await askConfirm(
+      "Xóa sạch toàn bộ dữ liệu hiện tại? File sao lưu sẽ được tải về trước. Thao tác này không thể hoàn tác trực tiếp trên màn hình.",
+    ))
+  )
+    return;
+  const safety = await repo.backup();
+  downloadJSON(safety, "LE_CORNER_TruocKhiXoa_" + localStamp() + ".json");
+  status("Đang tạo dữ liệu mới...");
+  const empty = await makeBackup(emptyCatalog(), repo.datasetId);
+  await repo.fullRestore(empty);
+  state.cart = [];
+  state.aiDraft = null;
+  state.backupDraft = null;
+  await load();
+  toast("Đã xóa sạch. Có thể nhập menu thật; file sao lưu cũ đã được tải về.");
+}
 async function fullRestore() {
   if (
     !state.backupDraft ||
@@ -1916,6 +1943,7 @@ async function handleAction(e) {
       ))
         box.checked = a === "select-all-backup";
     if (a === "confirm-full-restore") await fullRestore();
+    if (a === "reset-data") await resetData();
     if (a === "selected-preview") await previewSelected();
     if (a === "cancel-backup") {
       state.backupDraft = null;

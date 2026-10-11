@@ -16,7 +16,7 @@ const uuid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
 export const physicalId = (dataset, id) =>
   dataset === "live" ? id : dataset + "__" + id;
-const emptyCatalog = () => Object.fromEntries(COLLECTIONS.map((c) => [c, []]));
+export const emptyCatalog = () => Object.fromEntries(COLLECTIONS.map((c) => [c, []]));
 const sortRows = (rows) =>
   rows.sort(
     (a, b) =>
