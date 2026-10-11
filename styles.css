@@ -838,3 +838,90 @@ summary {
     padding: 16px;
   }
 }
+
+/* --- simplified flows --- */
+.menu-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+  max-height: 420px;
+  overflow: auto;
+}
+.menu-tile {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  padding: 14px 12px;
+  min-height: 72px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+}
+.menu-tile:hover {
+  border-color: var(--green);
+  background: #f5faf2;
+}
+.menu-tile small {
+  color: var(--muted);
+}
+.tile-count {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--green);
+  color: #fff;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.cart-list {
+  display: grid;
+  gap: 10px;
+}
+.cart-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.cart-row strong,
+.cart-row small {
+  display: block;
+}
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stepper button {
+  min-width: 40px;
+  padding: 8px 10px;
+}
+.stepper-qty {
+  min-width: 28px;
+  text-align: center;
+  font-weight: 700;
+}
+.ai-box > summary,
+.more-fields > summary {
+  padding: 4px 0;
+}
+.more-actions {
+  margin: 0;
+  width: 100%;
+}
+.more-actions .toolbar {
+  margin-top: 6px;
+}
+.more-fields .form-grid {
+  padding: 10px 0 0;
+}
+.menu-tile strong {
+  padding-right: 30px;
+}

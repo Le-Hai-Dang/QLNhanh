@@ -10,6 +10,7 @@ import {
   validateBackup,
   checksum,
   backupDiff,
+  canonical,
   changedFields,
   backupSummary,
   buildBatch,
@@ -47,8 +48,6 @@ const state = {
   busy: false,
   connected: false,
   historyLimit: 50,
-  saleQty: 1,
-  selectedMenu: "",
   filters: {
     q: "",
     entity: "",
@@ -392,25 +391,30 @@ function planFromForm(collection, id, data, before, options = {}) {
     datasetId: repo.datasetId,
   };
 }
-async function commitPlan(plan) {
+async function commitPlan(plan, message) {
+  await commitPlans([plan], message);
+}
+// Several plans are written in one repository transaction (all or nothing).
+async function commitPlans(plans, message) {
   if (!state.connected)
     throw new BusinessError("Chưa kết nối. Hãy tải lại dữ liệu.");
+  const warnings = plans.flatMap((p) => p.warnings);
   if (
-    plan.warnings.length &&
+    warnings.length &&
     !(await askConfirm(
-      plan.warnings.join("\n") + "\nXác nhận lưu với các cảnh báo này?",
+      warnings.join("\n") + "\nXác nhận lưu với các cảnh báo này?",
     ))
   )
     throw new BusinessError("Đã hủy lưu.");
   status("Đang ghi transaction...");
-  await repo.commit(plan);
+  await repo.commitMany(plans);
   try {
     await load();
   } catch (e) {
     state.connected = false;
     status("Đã lưu; tải lại dữ liệu để kiểm tra");
   }
-  toast("Đã lưu " + (labels[plan.collection] || plan.collection));
+  toast(message || "Đã lưu " + (labels[plans[0].collection] || plans[0].collection));
 }
 
 const NAV = [
@@ -420,8 +424,6 @@ const NAV = [
   ["ingredients", "nav-ingredients", "Nguyên liệu"],
   ["purchaseReceipts", "nav-purchases", "Nhập hàng"],
   ["menuItems", "nav-menu", "Món bán"],
-  ["recipes", "nav-recipes", "Công thức"],
-  ["reorderSettings", "nav-reorder", "Ngưỡng đặt hàng"],
   ["history", "nav-history", "Lịch sử"],
   ["backup", "nav-backup", "Sao lưu & khôi phục"],
 ];
@@ -567,102 +569,115 @@ function dashboard() {
     ing +
     '</strong><small>Đang theo dõi tồn kho</small></div><div class="card stat-card"><p>Món đang bán</p><strong>' +
     menu +
-    '</strong><small>Menu cố định</small></div></div><div class="grid inventory-dashboard-grid"><div class="card inventory-priority-card"><div class="section-head"><div><p class="eyebrow">Ưu tiên hôm nay</p><h2>Nguyên liệu cần đặt</h2></div><button class="secondary-button" data-view-link="reorderSettings">Cài đặt ngưỡng</button></div><p class="inventory-lead">Theo dõi số dư hiện tại và đặt hàng trước khi nguyên liệu chạm mức tối thiểu.</p><div class="inventory-alert-list">' +
+    '</strong><small>Menu cố định</small></div></div><div class="grid inventory-dashboard-grid"><div class="card inventory-priority-card"><div class="section-head"><div><p class="eyebrow">Ưu tiên hôm nay</p><h2>Nguyên liệu cần đặt</h2></div><button class="secondary-button" data-view-link="ingredients">Chỉnh ngưỡng</button></div><p class="inventory-lead">Theo dõi số dư hiện tại và đặt hàng trước khi nguyên liệu chạm mức tối thiểu.</p><div class="inventory-alert-list">' +
     inventoryRowsHtml +
     '</div><div class="toolbar inventory-actions"><button class="primary-button" data-view-link="ingredients">Mở tồn kho</button><button class="secondary-button" data-view-link="stockCounts">Kiểm kho</button></div></div><div class="card inventory-snapshot-card"><div class="section-head"><div><p class="eyebrow">Số dư hiện tại</p><h2>Tồn kho hiện tại</h2></div></div><div class="inventory-snapshot-list">' +
     inventorySnapshotHtml +
     '</div></div></div><div class="grid backup-grid"><div class="card"><div class="section-head"><div><p class="eyebrow">Lối tắt</p><h2>Nhập liệu nhanh</h2></div></div><div class="toolbar"><button class="primary-button" data-view-link="purchaseReceipts">Nhập hàng</button><button class="secondary-button" data-view-link="stockCounts">Kiểm kho</button><button class="secondary-button" data-view-link="menuItems">Cài đặt menu</button></div><div class="notice" style="margin-top:16px">Dataset hiện tại: <strong>' +
     esc(repo.datasetId) +
-    '</strong>. Mỗi thay đổi có phiên bản và lịch sử; thay đổi tồn kho có bút toán riêng.</div></div><div class="card"><div class="section-head"><div><p class="eyebrow">AI Input</p><h2>Dán đề xuất có cấu trúc</h2></div></div><textarea id="ai-batch-input" class="textarea" rows="5" placeholder="{&quot;schemaVersion&quot;:1,&quot;module&quot;:&quot;sales&quot;,&quot;operation&quot;:&quot;create&quot;,&quot;records&quot;:[]}"></textarea><div class="toolbar" style="margin-top:10px"><button class="secondary-button" data-action="validate-ai" data-testid="validate-batch">Kiểm tra dữ liệu</button></div><div id="ai-preview-container">' +
+    '</strong>. Mỗi thay đổi có phiên bản và lịch sử; thay đổi tồn kho có bút toán riêng.</div></div><details class="card ai-box"' + (state.aiDraft ? " open" : "") + '><summary>Nhập bằng AI (nâng cao)</summary><textarea id="ai-batch-input" class="textarea" rows="5" placeholder="{&quot;schemaVersion&quot;:1,&quot;module&quot;:&quot;sales&quot;,&quot;operation&quot;:&quot;create&quot;,&quot;records&quot;:[]}"></textarea><div class="toolbar" style="margin-top:10px"><button class="secondary-button" data-action="validate-ai" data-testid="validate-batch">Kiểm tra dữ liệu</button></div><div id="ai-preview-container">' +
     (state.aiDraft ? aiPreview() : "") +
-    '</div></div></div><div class="card" style="margin-top:16px"><div class="section-head"><div><p class="eyebrow">Mới nhất</p><h2>Lịch sử gần đây</h2></div><button class="secondary-button" data-view-link="history">Xem tất cả</button></div>' +
+    '</div></details></div><div class="card" style="margin-top:16px"><div class="section-head"><div><p class="eyebrow">Mới nhất</p><h2>Lịch sử gần đây</h2></div><button class="secondary-button" data-view-link="history">Xem tất cả</button></div>' +
     timeline(state.history.slice(0, 5), true) +
     "</div>"
   );
 }
 function salesView() {
   const menus = activeMenu(),
+    q = normalize(state.salesSearch),
     filtered = menus.filter(
       (m) =>
-        !state.salesSearch ||
-        [m.name, m.englishName, m.code, ...(m.aliases || [])].some((v) =>
-          normalize(v).includes(normalize(state.salesSearch)),
+        !q ||
+        [m.name, m.code, ...(m.aliases || [])].some((v) =>
+          normalize(v).includes(q),
         ),
     );
   const total = state.cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const inCart = (id) => state.cart.find((i) => i.menuItemId === id)?.quantity;
   return (
     '<div class="section-head"><div><p class="eyebrow">Bán hàng</p><h2>Nhập món bán</h2></div><div class="toolbar"><button class="secondary-button" data-view-link="salesList" data-testid="view-invoices">Danh sách hóa đơn</button></div></div><div class="grid backup-grid"><div class="card"><div class="form-grid" style="padding:0">' +
     input("sale-date", "Ngày bán", state.salesDate, "date") +
     input(
       "invoice-number",
-      "Mã hóa đơn",
+      "Mã hóa đơn (không bắt buộc)",
       state.salesInvoice,
       "text",
       'data-testid="invoice-number"',
     ) +
-    input(
-      "menu-search",
-      "Tìm tên món",
-      state.salesSearch,
-      "search",
-      'data-testid="menu-search"',
-    ) +
-    select(
-      "menu-item-select",
-      "Chọn món",
-      [
-        { value: "", label: "— Chọn món —" },
-        ...filtered.map((m) => ({
-          value: m.id,
-          label:
-            m.name +
-            (m.englishName ? " · " + m.englishName : "") +
-            " · " +
-            money(m.price),
-        })),
-      ],
-      state.selectedMenu || "",
-    ) +
-    input(
-      "sale-quantity",
-      "Số lượng",
-      state.saleQty,
-      "number",
-      'min="1" step="1" inputmode="numeric" data-testid="sale-quantity"',
-    ) +
-    '</div><div class="toolbar" style="margin-top:16px"><button class="primary-button" id="add-sale-item" data-action="add-cart" data-testid="add-sale-item">+ Thêm món</button><button class="secondary-button" data-action="clear-cart">Xóa giỏ</button></div><div id="sales-message" class="notice" style="margin-top:16px">Giá và công thức lấy từ Menu Settings. Hóa đơn chỉ ghi kho sau khi bấm Lưu.</div></div><div class="card"><div class="section-head"><div><p class="eyebrow">Preview trước commit</p><h2>Danh sách đã nhập</h2></div><strong id="sale-total" data-testid="sale-total">' +
+    '</div><div class="field" style="margin-top:14px"><label for="menu-search">Chạm vào món để thêm</label><input class="input" id="menu-search" type="search" placeholder="Tìm tên món..." value="' +
+    esc(state.salesSearch) +
+    '" data-testid="menu-search"></div>' +
+    (filtered.length
+      ? '<div class="menu-tiles">' +
+        filtered
+          .map(
+            (m) =>
+              '<button class="menu-tile" data-action="tile-add" data-id="' +
+              esc(m.id) +
+              '"><strong>' +
+              esc(m.name) +
+              "</strong><small>" +
+              money(m.price) +
+              "</small>" +
+              (inCart(m.id)
+                ? '<span class="tile-count">×' + inCart(m.id) + "</span>"
+                : "") +
+              "</button>",
+          )
+          .join("") +
+        "</div>"
+      : '<div class="empty"><strong>' +
+        (menus.length ? "Không tìm thấy món" : "Chưa có món") +
+        "</strong><span>" +
+        (menus.length ? "Thử từ khóa khác." : "Thêm món ở mục “Món bán”.") +
+        "</span></div>") +
+    '</div><div class="card"><div class="section-head"><div><h2>Hóa đơn</h2></div><strong id="sale-total" data-testid="sale-total">' +
     money(total) +
     "</strong></div>" +
     (state.cart.length
-      ? '<div class="table-wrap"><table class="data-table"><thead><tr><th>Món</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th><th></th></tr></thead><tbody>' +
+      ? '<div class="cart-list">' +
         state.cart
           .map(
             (i, n) =>
-              '<tr data-row-id="cart-' +
+              '<div class="cart-row" data-row-id="cart-' +
               esc(i.menuItemId) +
-              '"><td>' +
+              '"><div><strong>' +
               esc(i.name) +
-              "</td><td>" +
-              i.quantity +
-              "</td><td>" +
+              "</strong><small>" +
               money(i.price) +
-              "</td><td>" +
+              ' · <span class="muted">' +
               money(i.price * i.quantity) +
-              '</td><td><button class="danger-button" data-action="remove-cart" data-index="' +
+              '</span></small></div><div class="stepper"><button class="secondary-button" data-action="cart-dec" data-index="' +
               n +
-              '">Xóa</button></td></tr>',
+              '" aria-label="Giảm ' +
+              esc(i.name) +
+              '">−</button><span class="stepper-qty" aria-live="polite">' +
+              i.quantity +
+              '</span><button class="secondary-button" data-action="cart-inc" data-index="' +
+              n +
+              '" aria-label="Tăng ' +
+              esc(i.name) +
+              '">+</button><button class="danger-button" data-action="remove-cart" data-index="' +
+              n +
+              '" aria-label="Xóa ' +
+              esc(i.name) +
+              '">×</button></div></div>',
           )
           .join("") +
-        '</tbody></table></div><div class="toolbar" style="justify-content:flex-end;margin-top:16px"><button class="primary-button" data-action="save-sale" data-testid="save-sale">Lưu hóa đơn</button></div>'
-      : '<div class="empty"><strong>Chưa có món</strong><span>Chọn món và số lượng ở phần nhập liệu, rồi bấm “+ Thêm món”.</span></div>') +
-    '</div></div><div class="card" style="margin-top:16px"><div class="section-head"><div><p class="eyebrow">AI Batch Mode</p><h2>Nhập nhiều hóa đơn</h2></div></div><textarea id="sales-ai-input" class="textarea" rows="7" data-testid="ai-batch-input" placeholder="{&quot;schemaVersion&quot;:1,&quot;module&quot;:&quot;sales&quot;,&quot;operation&quot;:&quot;create&quot;,&quot;records&quot;:[{&quot;invoiceNo&quot;:&quot;HD002587&quot;,&quot;date&quot;:&quot;2026-10-09&quot;,&quot;items&quot;:[{&quot;menuName&quot;:&quot;AMERICANO&quot;,&quot;quantity&quot;:1}],&quot;expectedTotal&quot;:39000}]}"></textarea><div class="toolbar" style="margin-top:10px"><button class="secondary-button" data-action="validate-sales-ai" data-testid="validate-batch">Kiểm tra batch</button></div><div id="sales-ai-preview">' +
+        '</div><div class="toolbar" style="justify-content:flex-end;margin-top:16px"><button class="secondary-button" data-action="clear-cart">Xóa hết</button><button class="primary-button" data-action="save-sale" data-testid="save-sale">Lưu hóa đơn</button></div>'
+      : '<div class="empty"><strong>Chưa có món</strong><span>Chạm vào món để thêm vào hóa đơn.</span></div>') +
+    '</div></div><details class="card ai-box" style="margin-top:16px"' +
+    (state.aiDraft?.module === "sales" ? " open" : "") +
+    '><summary>Nhập nhiều hóa đơn bằng AI (nâng cao)</summary><textarea id="sales-ai-input" class="textarea" rows="7" data-testid="ai-batch-input" placeholder="{&quot;schemaVersion&quot;:1,&quot;module&quot;:&quot;sales&quot;,&quot;operation&quot;:&quot;create&quot;,&quot;records&quot;:[{&quot;invoiceNo&quot;:&quot;HD002587&quot;,&quot;date&quot;:&quot;2026-10-09&quot;,&quot;items&quot;:[{&quot;menuName&quot;:&quot;AMERICANO&quot;,&quot;quantity&quot;:1}],&quot;expectedTotal&quot;:39000}]}"></textarea><div class="toolbar" style="margin-top:10px"><button class="secondary-button" data-action="validate-sales-ai" data-testid="validate-batch">Kiểm tra batch</button></div><div id="sales-ai-preview">' +
     (state.aiDraft?.module === "sales" ? aiPreview() : "") +
-    "</div></div>"
+    "</div></details>"
   );
 }
 function rowSummary(collection, r) {
   if (collection === "menuItems")
-    return [money(r.price), r.group].filter(Boolean).join(" · ");
+    return [money(r.price), r.group, itemsText(recipeFor(r.id)?.items)]
+      .filter(Boolean)
+      .join(" · ");
   if (collection === "ingredients")
     return (
       "Tồn " + r.stock + " " + unitText(r.baseUnit) +
@@ -702,9 +717,17 @@ function listView(collection) {
     esc(noun) +
     '</h2></div><div class="toolbar"><input class="input" id="list-search" type="search" aria-label="Tìm nhanh" placeholder="Tìm nhanh..." value="' +
     esc(state.filters.q) +
-    '"><button class="primary-button" data-action="add" data-collection="' +
-    collection +
-    '">+ Thêm</button></div></div><div class="card">' +
+    '">' +
+    (collection === "recipes"
+      ? ""
+      : '<button class="primary-button" data-action="add" data-collection="' +
+        collection +
+        '">+ Thêm</button>') +
+    '</div></div>' +
+    (collection === "recipes"
+      ? '<p class="notice">Công thức được nhập cùng món ở mục “Món bán”. Tại đây chỉ xem phiên bản, lịch sử và khôi phục.</p>'
+      : "") +
+    '<div class="card">' +
     (filtered.length
       ? '<div class="table-wrap"><table class="data-table"><thead><tr><th>Tên</th><th>Thông tin</th><th>Trạng thái</th><th>Phiên bản</th><th>Thao tác</th></tr></thead><tbody>' +
         filtered
@@ -725,21 +748,7 @@ function listView(collection) {
               "</span></td><td>v" +
               (r.version || 1) +
               '</td><td class="wrap"><div class="toolbar row-actions">' +
-              (collection === "stockCounts" && !r.adjusted
-                ? '<button class="primary-button" data-action="adjust-count" data-id="' +
-                  esc(r.id) +
-                  '">Áp dụng kiểm kê</button>'
-                : "") +
-              '<button class="secondary-button" data-action="versions" data-collection="' +
-              collection +
-              '" data-id="' +
-              esc(r.id) +
-              '">Phiên bản</button><button class="secondary-button" data-action="entity-history" data-collection="' +
-              collection +
-              '" data-id="' +
-              esc(r.id) +
-              '">Lịch sử</button>' +
-              (collection === "stockCounts" && r.adjusted
+              (collection === "recipes" || (collection === "stockCounts" && r.adjusted)
                 ? ""
                 : '<button class="secondary-button" data-action="edit" data-collection="' +
                   collection +
@@ -757,6 +766,22 @@ function listView(collection) {
                   '" data-id="' +
                   esc(r.id) +
                   '">Ẩn</button>') +
+              '<details class="more-actions"><summary>Xem thêm</summary><div class="toolbar">' +
+              '<button class="secondary-button" data-action="versions" data-collection="' +
+              collection +
+              '" data-id="' +
+              esc(r.id) +
+              '">Phiên bản</button>' +
+              (collection === "menuItems" && recipeFor(r.id)
+                ? '<button class="secondary-button" data-action="versions" data-collection="recipes" data-id="' +
+                  esc(recipeFor(r.id).id) +
+                  '">Phiên bản công thức</button>'
+                : "") +
+              '<button class="secondary-button" data-action="entity-history" data-collection="' +
+              collection +
+              '" data-id="' +
+              esc(r.id) +
+              '">Lịch sử</button></div></details>' +
               "</div></td></tr>",
           )
           .join("") +
@@ -1182,10 +1207,12 @@ function itemRowsHtml(collection, rows) {
     '<p class="muted">Chưa có dòng nào. Bấm “+ Thêm dòng”.</p>'
   );
 }
-function itemsEditor(collection, rows) {
+function itemsEditor(collection, rows, title = "Chi tiết") {
   const list = rows.length ? rows : [{ main: "", qty: "", unit: "", cost: "" }];
   return (
-    '<div class="field full" role="group" aria-labelledby="items-title"><span class="field-title" id="items-title">Chi tiết</span><div id="items-editor" data-collection="' +
+    '<div class="field full" role="group" aria-labelledby="items-title"><span class="field-title" id="items-title">' +
+    esc(title) +
+    '</span><div id="items-editor" data-collection="' +
     collection +
     '">' +
     itemRowsHtml(collection, list) +
@@ -1241,31 +1268,25 @@ function formFields(collection, data = {}) {
   ];
   if (collection === "menuItems")
     return (
-      input("entity-name", "Tên món", data.name) +
-      input("entity-english", "Tên tiếng Anh", data.englishName) +
-      input("entity-code", "Mã món", data.code) +
-      input("entity-group", "Nhóm món", data.group) +
+      input("entity-name", "Tên món (tiếng Anh)", data.name) +
       input(
         "entity-price",
         "Giá bán",
         data.price,
         "number",
-        'min="0" step="1000"',
+        'min="0" step="1000" inputmode="numeric"',
       ) +
+      '<details class="field full more-fields"' +
+      (data.code || data.group || (data.unit && data.unit !== "ly") ? " open" : "") +
+      '><summary>Tùy chọn khác (mã, nhóm, đơn vị)</summary><div class="form-grid">' +
+      input("entity-code", "Mã món", data.code) +
+      input("entity-group", "Nhóm món", data.group) +
       input("entity-unit", "Đơn vị bán", data.unit || "ly") +
-      textarea(
-        "entity-aliases",
-        "Tên tương đương (mỗi dòng một tên)",
-        (data.aliases || []).join("\n"),
-      ) +
-      select(
-        "entity-status",
-        "Trạng thái",
-        [
-          { value: "ACTIVE", label: "Đang bán" },
-          { value: "ARCHIVED", label: "Ngừng bán" },
-        ],
-        data.status || "ACTIVE",
+      "</div></details>" +
+      itemsEditor(
+        "recipes",
+        rawItems(data.recipeItems),
+        "Thành phần cho 1 " + (data.unit || "ly"),
       )
     );
   if (collection === "ingredients")
@@ -1301,30 +1322,12 @@ function formFields(collection, data = {}) {
         "Giá vốn / đơn vị",
         data.unitCost || 0,
         "number",
-      ) +
-      select(
-        "entity-status",
-        "Trạng thái",
-        [
-          { value: "ACTIVE", label: "Đang dùng" },
-          { value: "ARCHIVED", label: "Đã ẩn" },
-        ],
-        data.status || "ACTIVE",
       )
     );
   if (collection === "recipes")
     return (
       select("entity-menu-id", "Món", menuOpts, data.menuItemId) +
-      itemsEditor("recipes", rawItems(data.items)) +
-      select(
-        "entity-status",
-        "Trạng thái",
-        [
-          { value: "ACTIVE", label: "Đang dùng" },
-          { value: "ARCHIVED", label: "Đã ẩn" },
-        ],
-        data.status || "ACTIVE",
-      )
+      itemsEditor("recipes", rawItems(data.items))
     );
   if (collection === "sales")
     return (
@@ -1351,11 +1354,17 @@ function formFields(collection, data = {}) {
     textarea("entity-note", "Ghi chú", data.note || "")
   );
 }
+const recipeFor = (menuItemId) =>
+  (state.catalog.recipes || []).find(
+    (r) => r.menuItemId === menuItemId && r.status === "ACTIVE",
+  );
 function openEditor(collection, id) {
   state.editing = { collection, id };
   const data = id
-    ? (state.catalog[collection] || []).find((r) => r.id === id) || {}
+    ? { ...((state.catalog[collection] || []).find((r) => r.id === id) || {}) }
     : {};
+  if (collection === "menuItems" && id)
+    data.recipeItems = recipeFor(id)?.items || [];
   document.querySelector("#dialogEyebrow").textContent = labels[collection];
   document.querySelector("#dialogTitle").textContent = id
     ? "Sửa bản ghi"
@@ -1371,16 +1380,12 @@ function readForm(collection) {
   if (collection === "menuItems")
     Object.assign(data, {
       name: val("entity-name"),
-      englishName: val("entity-english"),
+      englishName: "",
+      aliases: [],
       code: val("entity-code"),
       group: val("entity-group"),
       price: val("entity-price"),
       unit: val("entity-unit"),
-      aliases: val("entity-aliases")
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean),
-      status: val("entity-status"),
     });
   else if (collection === "ingredients")
     Object.assign(data, {
@@ -1390,13 +1395,11 @@ function readForm(collection) {
       openingStock: val("entity-opening-stock"),
       minimumStock: val("entity-minimum-stock"),
       unitCost: val("entity-unit-cost"),
-      status: val("entity-status"),
     });
   else if (collection === "recipes")
     Object.assign(data, {
       menuItemId: val("entity-menu-id"),
       items: readItems("recipes"),
-      status: val("entity-status"),
     });
   else if (collection === "sales")
     Object.assign(data, {
@@ -1425,6 +1428,61 @@ function readForm(collection) {
     });
   return data;
 }
+// A menu item and its recipe are entered together and committed atomically.
+async function saveMenuWithRecipe(id, before) {
+  const menuId = id || uid();
+  const form = readForm("menuItems");
+  const items = readItems("recipes");
+  if (!items.length)
+    throw new BusinessError("Món cần ít nhất một thành phần và định lượng.");
+  const menuPlan = planFromForm("menuItems", menuId, form, before);
+  const draft = clone(state.catalog);
+  draft.menuItems = [
+    ...(draft.menuItems || []).filter((m) => m.id !== menuId),
+    { ...menuPlan.after, id: menuId, version: menuPlan.expectedVersion + 1 },
+  ];
+  const oldRecipe = recipeFor(menuId);
+  const recipePlan = {
+    ...previewChange(
+      {
+        collection: "recipes",
+        id: oldRecipe?.id || uid(),
+        data: {
+          menuItemId: menuId,
+          items,
+          status: menuPlan.after.status === "ACTIVE" ? "ACTIVE" : oldRecipe?.status || "ACTIVE",
+        },
+        before: oldRecipe ? await repo.get("recipes", oldRecipe.id) : null,
+        note: "Cập nhật cùng món " + menuPlan.after.name,
+      },
+      draft,
+    ),
+    expectedRevision: repo.revision,
+    datasetId: repo.datasetId,
+  };
+  const sameItems =
+    oldRecipe &&
+    canonical(oldRecipe.items.map((i) => [i.ingredientId, i.quantity])) ===
+      canonical(recipePlan.after.items.map((i) => [i.ingredientId, i.quantity]));
+  const plans = [];
+  if (!before || diffFields(before, menuPlan.after).length) plans.push(menuPlan);
+  if (!sameItems) plans.push(recipePlan);
+  if (!plans.length) throw new BusinessError("Không có thay đổi để lưu.");
+  await commitPlans(plans, "Đã lưu món " + menuPlan.after.name + " cùng thành phần.");
+}
+async function applyCount(id) {
+  const before = await repo.get("stockCounts", id);
+  const plan = planFromForm("stockCounts", id, before, before, {
+    action: "ADJUST",
+    note: "Điều chỉnh theo phiếu kiểm kho",
+  });
+  if (
+    await askConfirm(
+      "Cập nhật tồn kho theo phiếu kiểm: " + impactPlain(plan.impacts) + "?",
+    )
+  )
+    await commitPlan(plan, "Đã cập nhật tồn kho theo kiểm kê.");
+}
 async function saveEditor(event) {
   event.preventDefault();
   if (state.busy) return;
@@ -1433,14 +1491,15 @@ async function saveEditor(event) {
   const { collection, id } = state.editing;
   try {
     const before = id ? await repo.get(collection, id) : null;
-    const plan = planFromForm(
-      collection,
-      id || uid(),
-      readForm(collection),
-      before,
-    );
-    await commitPlan(plan);
+    const recordId = id || uid();
+    if (collection === "menuItems") await saveMenuWithRecipe(id, before);
+    else
+      await commitPlan(
+        planFromForm(collection, recordId, readForm(collection), before),
+      );
     document.querySelector("#entityDialog").close();
+    // A new stock count is applied right away (after confirming) instead of a second manual step.
+    if (collection === "stockCounts" && !id) await applyCount(recordId);
   } catch (e) {
     toast(e.message || "Dữ liệu chưa hợp lệ.", true);
   } finally {
@@ -1715,29 +1774,19 @@ function cartPlan() {
   };
   return planFromForm("sales", uid(), data, null);
 }
-function addCart() {
-  const id = document.querySelector("#menu-item-select")?.value,
-    qty = Number(document.querySelector("#sale-quantity")?.value || 0),
-    menu = activeMenu().find((m) => m.id === id);
-  if (!menu || !Number.isInteger(qty) || qty < 1)
-    return toast("Chọn món và số lượng hợp lệ.", "error");
+function cartAdd(id) {
+  const menu = activeMenu().find((m) => m.id === id);
+  if (!menu) return;
   const existing = state.cart.find((i) => i.menuItemId === id);
-  if (existing) existing.quantity += qty;
+  if (existing) existing.quantity += 1;
   else
     state.cart.push({
       menuItemId: id,
       name: menu.name,
       price: menu.price,
-      quantity: qty,
+      quantity: 1,
     });
-  state.salesDate =
-    document.querySelector("#sale-date")?.value || state.salesDate;
-  state.salesInvoice = document.querySelector("#invoice-number")?.value || "";
-  state.salesSearch = document.querySelector("#menu-search")?.value || "";
-  state.saleQty = 1;
-  state.selectedMenu = "";
   render();
-  toast("Đã thêm " + menu.name + " × " + qty);
 }
 async function saveSale() {
   try {
@@ -1756,7 +1805,7 @@ async function saveSale() {
     state.cart = [];
     state.salesInvoice = "";
     render();
-    toast("Đã lưu hóa đơn " + (data.invoiceNo || id));
+    toast("Đã lưu hóa đơn" + (data.invoiceNo ? " " + data.invoiceNo : "") + ".");
   } catch (e) {
     toast(e.message || "Không thể lưu hóa đơn.", "error");
   }
@@ -1797,22 +1846,11 @@ async function handleAction(e) {
         before,
         { action: a === "archive" ? "ARCHIVE" : "RESTORE" },
       );
-      if (a === "unarchive") showRestorePreview([plan]);
-      else if (await askConfirm("Ẩn bản ghi này?")) await commitPlan(plan);
-    }
-    if (a === "adjust-count") {
-      const before = await repo.get("stockCounts", t.dataset.id);
-      const plan = planFromForm("stockCounts", t.dataset.id, before, before, {
-        action: "ADJUST",
-        note: "Điều chỉnh theo phiếu kiểm kho",
-      });
-      if (
-        await askConfirm(
-          "Áp dụng chênh lệch kiểm kê: " + impactPlain(plan.impacts) + "?",
-        )
-      )
+      const name = plan.after.name || "bản ghi này";
+      if (await askConfirm((a === "unarchive" ? "Hiện lại " : "Ẩn ") + name + "?"))
         await commitPlan(plan);
     }
+    if (a === "adjust-count") await applyCount(t.dataset.id);
     if (a === "event-detail")
       eventDetail(state.history.find((x) => x.eventId === t.dataset.eventId));
     if (a === "restore-event")
@@ -1837,7 +1875,16 @@ async function handleAction(e) {
       state.restorePlans = null;
       document.querySelector("#detailDialog").close();
     }
-    if (a === "add-cart") addCart();
+    if (a === "tile-add") cartAdd(t.dataset.id);
+    if (a === "cart-inc") {
+      state.cart[Number(t.dataset.index)].quantity += 1;
+      render();
+    }
+    if (a === "cart-dec") {
+      const line = state.cart[Number(t.dataset.index)];
+      line.quantity = Math.max(1, line.quantity - 1);
+      render();
+    }
     if (a === "remove-cart") {
       state.cart.splice(Number(t.dataset.index), 1);
       render();
@@ -1906,13 +1953,6 @@ document.querySelector("#view").addEventListener("input", (e) => {
   }
   if (e.target.id === "sale-date") state.salesDate = e.target.value;
   if (e.target.id === "invoice-number") state.salesInvoice = e.target.value;
-  if (e.target.id === "sale-quantity") state.saleQty = e.target.value;
-});
-document.querySelector("#view").addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && e.target.id === "sale-quantity") {
-    e.preventDefault();
-    addCart();
-  }
 });
 document.querySelector("#view").addEventListener("change", async (e) => {
   try {
@@ -1921,10 +1961,6 @@ document.querySelector("#view").addEventListener("change", async (e) => {
       return;
     }
     if (e.target.matches("[data-backup-selection]")) return;
-    if (e.target.id === "menu-item-select") {
-      state.selectedMenu = e.target.value;
-      return;
-    }
     let changed = false;
     for (const key of ["entity", "action", "source", "from", "to"])
       if (e.target.id === "history-" + key) {
