@@ -1,0 +1,767 @@
+{
+  "schemaVersion": 1,
+  "module": "recipes",
+  "operation": "create",
+  "records": [
+    {
+      "id": "r-matcha-latte",
+      "menuItemId": "m-matcha-latte",
+      "items": [
+        {
+          "ingredientId": "bot-matcha",
+          "quantity": 4
+        },
+        {
+          "ingredientId": "duong-nuoc",
+          "quantity": 15
+        },
+        {
+          "ingredientId": "sua-tuoi",
+          "quantity": 50
+        },
+        {
+          "ingredientId": "whipping",
+          "quantity": 15
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-matcha-latte-coffee",
+      "menuItemId": "m-matcha-latte-coffee",
+      "items": [
+        {
+          "ingredientId": "bot-matcha",
+          "quantity": 3
+        },
+        {
+          "ingredientId": "duong-nuoc",
+          "quantity": 20
+        },
+        {
+          "ingredientId": "sua-tuoi",
+          "quantity": 80
+        },
+        {
+          "ingredientId": "whipping",
+          "quantity": 15
+        },
+        {
+          "ingredientId": "cot-ca-phe-phin",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-matcha-strawberry",
+      "menuItemId": "m-matcha-strawberry",
+      "items": [
+        {
+          "ingredientId": "bot-matcha",
+          "quantity": 4
+        },
+        {
+          "ingredientId": "sua-tuoi",
+          "quantity": 80
+        },
+        {
+          "ingredientId": "whipping",
+          "quantity": 15
+        },
+        {
+          "ingredientId": "duong-nuoc",
+          "quantity": 15
+        },
+        {
+          "ingredientId": "mut-dau",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-matcha-mango-coconut",
+      "menuItemId": "m-matcha-mango-coconut",
+      "items": [
+        {
+          "ingredientId": "bot-matcha",
+          "quantity": 4
+        },
+        {
+          "ingredientId": "sua-tuoi",
+          "quantity": 80
+        },
+        {
+          "ingredientId": "nuoc-cot-dua",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "whipping",
+          "quantity": 20
+        },
+        {
+          "ingredientId": "duong-nuoc",
+          "quantity": 15
+        },
+        {
+          "ingredientId": "mut-xoai",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-traditional-milk-tea",
+      "menuItemId": "m-traditional-milk-tea",
+      "items": [
+        {
+          "ingredientId": "tra-den-btp",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "bot-beo",
+          "quantity": 25
+        },
+        {
+          "ingredientId": "sua-dac",
+          "quantity": 35
+        },
+        {
+          "ingredientId": "tran-chau",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-green-tea-milk-tea",
+      "menuItemId": "m-green-tea-milk-tea",
+      "items": [
+        {
+          "ingredientId": "tra-den-btp",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "bot-matcha",
+          "quantity": 3
+        },
+        {
+          "ingredientId": "bot-beo",
+          "quantity": 15
+        },
+        {
+          "ingredientId": "sua-dac",
+          "quantity": 35
+        },
+        {
+          "ingredientId": "tran-chau",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-strawberry-milk-tea",
+      "menuItemId": "m-strawberry-milk-tea",
+      "items": [
+        {
+          "ingredientId": "tra-den-btp",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "bot-beo",
+          "quantity": 15
+        },
+        {
+          "ingredientId": "sua-dac",
+          "quantity": 35
+        },
+        {
+          "ingredientId": "mut-dau",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "tran-chau",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-mango-passion-fruit-tea",
+      "menuItemId": "m-mango-passion-fruit-tea",
+      "items": [
+        {
+          "ingredientId": "tra-den-btp",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "mut-xoai",
+          "quantity": 20
+        },
+        {
+          "ingredientId": "mut-chanh-day",
+          "quantity": 20
+        },
+        {
+          "ingredientId": "duong-nuoc",
+          "quantity": 10
+        },
+        {
+          "ingredientId": "thach-nha-dam",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "hung-lui",
+          "quantity": 1
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-lychee-rose-tea",
+      "menuItemId": "m-lychee-rose-tea",
+      "items": [
+        {
+          "ingredientId": "tra-den-btp",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "mut-vai",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "syrup-hoa-hong",
+          "quantity": 20
+        },
+        {
+          "ingredientId": "duong-nuoc",
+          "quantity": 10
+        },
+        {
+          "ingredientId": "cot-chanh",
+          "quantity": 5
+        },
+        {
+          "ingredientId": "trai-vai",
+          "quantity": 2
+        },
+        {
+          "ingredientId": "hung-lui",
+          "quantity": 1
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-strawberry-pomegranate-tea",
+      "menuItemId": "m-strawberry-pomegranate-tea",
+      "items": [
+        {
+          "ingredientId": "tra-den-btp",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "mut-dau",
+          "quantity": 20
+        },
+        {
+          "ingredientId": "syrup-luu",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "duong-nuoc",
+          "quantity": 10
+        },
+        {
+          "ingredientId": "thach-nha-dam",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "hung-lui",
+          "quantity": 1
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-espresso",
+      "menuItemId": "m-espresso",
+      "items": [
+        {
+          "ingredientId": "ca-phe-espresso",
+          "quantity": 18
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-americano-iced",
+      "menuItemId": "m-americano-iced",
+      "items": [
+        {
+          "ingredientId": "ca-phe-espresso",
+          "quantity": 18
+        },
+        {
+          "ingredientId": "nuoc-loc",
+          "quantity": 80
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-latte-iced",
+      "menuItemId": "m-latte-iced",
+      "items": [
+        {
+          "ingredientId": "ca-phe-espresso",
+          "quantity": 18
+        },
+        {
+          "ingredientId": "sua-tuoi",
+          "quantity": 120
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-latte-hot",
+      "menuItemId": "m-latte-hot",
+      "items": [
+        {
+          "ingredientId": "ca-phe-espresso",
+          "quantity": 18
+        },
+        {
+          "ingredientId": "sua-tuoi",
+          "quantity": 180
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-cappuccino",
+      "menuItemId": "m-cappuccino",
+      "items": [
+        {
+          "ingredientId": "ca-phe-espresso",
+          "quantity": 18
+        },
+        {
+          "ingredientId": "sua-tuoi",
+          "quantity": 150
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-caramel-macchiato-iced",
+      "menuItemId": "m-caramel-macchiato-iced",
+      "items": [
+        {
+          "ingredientId": "ca-phe-espresso",
+          "quantity": 18
+        },
+        {
+          "ingredientId": "vanilla-syrup",
+          "quantity": 5
+        },
+        {
+          "ingredientId": "caramel-syrup",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "sua-tuoi",
+          "quantity": 90
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-caramel-macchiato-hot",
+      "menuItemId": "m-caramel-macchiato-hot",
+      "items": [
+        {
+          "ingredientId": "ca-phe-espresso",
+          "quantity": 18
+        },
+        {
+          "ingredientId": "vanilla-syrup",
+          "quantity": 5
+        },
+        {
+          "ingredientId": "caramel-syrup",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "sua-tuoi",
+          "quantity": 150
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-orange-juice",
+      "menuItemId": "m-orange-juice",
+      "items": [
+        {
+          "ingredientId": "cam",
+          "quantity": 530
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-fresh-coconut",
+      "menuItemId": "m-fresh-coconut",
+      "items": [
+        {
+          "ingredientId": "nuoc-dua",
+          "quantity": 1
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-pineapple-juice",
+      "menuItemId": "m-pineapple-juice",
+      "items": [
+        {
+          "ingredientId": "thom",
+          "quantity": 480
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-energy-boost",
+      "menuItemId": "m-energy-boost",
+      "items": [
+        {
+          "ingredientId": "thom",
+          "quantity": 120
+        },
+        {
+          "ingredientId": "cam",
+          "quantity": 150
+        },
+        {
+          "ingredientId": "ca-rot",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "gung",
+          "quantity": 2
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-green-fresh-detox",
+      "menuItemId": "m-green-fresh-detox",
+      "items": [
+        {
+          "ingredientId": "tao",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "dua-leo",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "bo-xoi",
+          "quantity": 20
+        },
+        {
+          "ingredientId": "cot-chanh",
+          "quantity": 5
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-tropical-glow",
+      "menuItemId": "m-tropical-glow",
+      "items": [
+        {
+          "ingredientId": "thom",
+          "quantity": 20
+        },
+        {
+          "ingredientId": "ca-rot",
+          "quantity": 70
+        },
+        {
+          "ingredientId": "tao",
+          "quantity": 70
+        },
+        {
+          "ingredientId": "gung",
+          "quantity": 2
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-tierra-del-fuego-glass",
+      "menuItemId": "m-tierra-del-fuego-glass",
+      "items": [
+        {
+          "ingredientId": "ing-tierra-del-fuego",
+          "quantity": 145
+        }
+      ]
+    },
+    {
+      "id": "r-cabina-56-reserva-glass",
+      "menuItemId": "m-cabina-56-reserva-glass",
+      "items": [
+        {
+          "ingredientId": "ing-cabina-56-reserva",
+          "quantity": 145
+        }
+      ]
+    },
+    {
+      "id": "r-aresti-glass",
+      "menuItemId": "m-aresti-glass",
+      "items": [
+        {
+          "ingredientId": "ing-aresti",
+          "quantity": 145
+        }
+      ]
+    },
+    {
+      "id": "r-santa-estampilla-glass",
+      "menuItemId": "m-santa-estampilla-glass",
+      "items": [
+        {
+          "ingredientId": "ing-santa-estampilla",
+          "quantity": 145
+        }
+      ]
+    },
+    {
+      "id": "r-malnegro-primitivo-bottle",
+      "menuItemId": "m-malnegro-primitivo-bottle",
+      "items": [
+        {
+          "ingredientId": "ing-malnegro-primitivo",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-chateau-saint-andre-cobin-bottle",
+      "menuItemId": "m-chateau-saint-andre-cobin-bottle",
+      "items": [
+        {
+          "ingredientId": "ing-chateau-saint-andre-cobin",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-chateau-de-pasquette-bottle",
+      "menuItemId": "m-chateau-de-pasquette-bottle",
+      "items": [
+        {
+          "ingredientId": "ing-chateau-de-pasquette",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-tiraki-sauvignon-blanc-bottle",
+      "menuItemId": "m-tiraki-sauvignon-blanc-bottle",
+      "items": [
+        {
+          "ingredientId": "ing-tiraki-sauvignon-blanc",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-paul-barn-bottle",
+      "menuItemId": "m-paul-barn-bottle",
+      "items": [
+        {
+          "ingredientId": "ing-paul-barn",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-dame-prosecco-bottle",
+      "menuItemId": "m-dame-prosecco-bottle",
+      "items": [
+        {
+          "ingredientId": "ing-dame-prosecco",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-absolut",
+      "menuItemId": "m-absolut",
+      "items": [
+        {
+          "ingredientId": "ing-absolut",
+          "quantity": 145
+        }
+      ]
+    },
+    {
+      "id": "r-bombay",
+      "menuItemId": "m-bombay",
+      "items": [
+        {
+          "ingredientId": "ing-bombay",
+          "quantity": 145
+        }
+      ]
+    },
+    {
+      "id": "r-bacardi-light",
+      "menuItemId": "m-bacardi-light",
+      "items": [
+        {
+          "ingredientId": "ing-bacardi-light",
+          "quantity": 145
+        }
+      ]
+    },
+    {
+      "id": "r-jose-cuervo",
+      "menuItemId": "m-jose-cuervo",
+      "items": [
+        {
+          "ingredientId": "ing-jose-cuervo",
+          "quantity": 145
+        }
+      ]
+    },
+    {
+      "id": "r-jim-beam",
+      "menuItemId": "m-jim-beam",
+      "items": [
+        {
+          "ingredientId": "ing-jim-beam",
+          "quantity": 145
+        }
+      ]
+    },
+    {
+      "id": "r-hennessy-vs",
+      "menuItemId": "m-hennessy-vs",
+      "items": [
+        {
+          "ingredientId": "ing-hennessy-vs",
+          "quantity": 145
+        }
+      ]
+    },
+    {
+      "id": "r-macallan-12",
+      "menuItemId": "m-macallan-12",
+      "items": [
+        {
+          "ingredientId": "ing-macallan-12",
+          "quantity": 145
+        }
+      ]
+    },
+    {
+      "id": "r-corona-extra",
+      "menuItemId": "m-corona-extra",
+      "items": [
+        {
+          "ingredientId": "ing-corona-extra",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-heineken-phap",
+      "menuItemId": "m-heineken-phap",
+      "items": [
+        {
+          "ingredientId": "ing-heineken-phap",
+          "quantity": 1
+        }
+      ]
+    }
+  ]
+}

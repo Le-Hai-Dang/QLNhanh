@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 1,
+  "module": "menuItems",
+  "operation": "create",
+  "records": [
+    {
+      "id": "m-santa-estampilla-glass",
+      "name": "Santa Estampilla (Ly)",
+      "price": 130000,
+      "group": "White Wine",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-santa-estampilla-bottle",
+      "name": "Santa Estampilla (Chai)",
+      "price": 680000,
+      "group": "White Wine",
+      "unit": "chai",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-malnegro-primitivo-bottle",
+      "name": "Malnegro Primitivo (Chai)",
+      "price": 950000,
+      "group": "Red Wine",
+      "unit": "chai",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-chateau-saint-andre-cobin-bottle",
+      "name": "Chateau Saint-André Cobin (Chai)",
+      "price": 1300000,
+      "group": "Red Wine",
+      "unit": "chai",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-chateau-de-pasquette-bottle",
+      "name": "Château de Pasquette Saint-Emilion Grand Cru (Chai)",
+      "price": 1700000,
+      "group": "Red Wine",
+      "unit": "chai",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-tiraki-sauvignon-blanc-bottle",
+      "name": "Tiraki Sauvignon Blanc (Chai)",
+      "price": 950000,
+      "group": "White Wine",
+      "unit": "chai",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-paul-barn-bottle",
+      "name": "Paul Barn (Chai)",
+      "price": 680000,
+      "group": "Sparkling Wine",
+      "unit": "chai",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-dame-prosecco-bottle",
+      "name": "Dame Prosecco (Chai)",
+      "price": 1300000,
+      "group": "Champagne",
+      "unit": "chai",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-absolut",
+      "name": "Absolut",
+      "price": 110000,
+      "group": "Spirit",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-bombay",
+      "name": "Bombay",
+      "price": 110000,
+      "group": "Spirit",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-bacardi-light",
+      "name": "Bacardi Light",
+      "price": 110000,
+      "group": "Spirit",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-jose-cuervo",
+      "name": "Jose Cuervo",
+      "price": 110000,
+      "group": "Spirit",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-jim-beam",
+      "name": "Jim Beam",
+      "price": 90000,
+      "group": "Spirit",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-hennessy-vs",
+      "name": "Hennessy V.S",
+      "price": 150000,
+      "group": "Spirit",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-macallan-12",
+      "name": "Macallan 12",
+      "price": 310000,
+      "group": "Spirit",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-corona-extra",
+      "name": "Corona Extra (355ml)",
+      "price": 70000,
+      "group": "Beer",
+      "unit": "chai",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-heineken-phap",
+      "name": "Heineken Pháp (250ml)",
+      "price": 70000,
+      "group": "Beer",
+      "unit": "chai",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-sig-le-corner",
+      "name": "Le Corner",
+      "price": 190000,
+      "group": "Signature Cocktails",
+      "unit": "ly",
+      "status": "ARCHIVED"
+    },
+    {
+      "id": "m-sig-chill-night-out",
+      "name": "Chill Night Out",
+      "price": 190000,
+      "group": "Signature Cocktails",
+      "unit": "ly",
+      "status": "ARCHIVED"
+    },
+    {
+      "id": "m-sig-passionate",
+      "name": "Passionate",
+      "price": 190000,
+      "group": "Signature Cocktails",
+      "unit": "ly",
+      "status": "ARCHIVED"
+    },
+    {
+      "id": "m-sig-miss-me-yet",
+      "name": "Miss Me Yet ?",
+      "price": 190000,
+      "group": "Signature Cocktails",
+      "unit": "ly",
+      "status": "ARCHIVED"
+    },
+    {
+      "id": "m-sig-saigon-tropical",
+      "name": "Saigon Tropical",
+      "price": 190000,
+      "group": "Signature Cocktails",
+      "unit": "ly",
+      "status": "ARCHIVED"
+    },
+    {
+      "id": "m-cla-old-fashioned",
+      "name": "Old Fashioned",
+      "price": 170000,
+      "group": "Classic Cocktails",
+      "unit": "ly",
+      "status": "ARCHIVED"
+    },
+    {
+      "id": "m-cla-whisky-sour",
+      "name": "Whisky Sour",
+      "price": 170000,
+      "group": "Classic Cocktails",
+      "unit": "ly",
+      "status": "ARCHIVED"
+    },
+    {
+      "id": "m-cla-mojito",
+      "name": "Mojito",
+      "price": 170000,
+      "group": "Classic Cocktails",
+      "unit": "ly",
+      "status": "ARCHIVED"
+    },
+    {
+      "id": "m-cla-margarita",
+      "name": "Margarita",
+      "price": 170000,
+      "group": "Classic Cocktails",
+      "unit": "ly",
+      "status": "ARCHIVED"
+    },
+    {
+      "id": "m-cla-manhattan",
+      "name": "Manhattan",
+      "price": 170000,
+      "group": "Classic Cocktails",
+      "unit": "ly",
+      "status": "ARCHIVED"
+    }
+  ]
+}

@@ -475,9 +475,10 @@ export function previewChange(
     }
   }
   result.impacts = aggregate(result.impacts);
-  if (result.impacts.length > 6)
+  // Each ingredient costs two writes (balance + ledger); the repository also caps a batch at 400 writes.
+  if (result.impacts.length > 40)
     throw new BusinessError(
-      "Một giao dịch tối đa 6 nguyên liệu khác nhau để bảo đảm giới hạn Security Rules. Hãy chia phiếu.",
+      "Một giao dịch tối đa 40 nguyên liệu khác nhau. Hãy chia phiếu.",
       "LIMIT",
     );
   for (const impact of result.impacts) {

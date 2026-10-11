@@ -1,0 +1,367 @@
+{
+  "schemaVersion": 1,
+  "module": "ingredients",
+  "operation": "create",
+  "records": [
+    {
+      "id": "tra-den-nguyen-la",
+      "name": "Trà đen nguyên lá (Wao Tea)",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 196.56
+    },
+    {
+      "id": "tra-den-btp",
+      "name": "Trà đen BTP (đã ủ)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 13.82
+    },
+    {
+      "id": "duong-nuoc",
+      "name": "Đường nước BTP",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 28.33
+    },
+    {
+      "id": "duong-cat",
+      "name": "Đường cát (Biên Hòa)",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 34
+    },
+    {
+      "id": "bot-matcha",
+      "name": "Bột Matcha Uji",
+      "baseUnit": "g",
+      "packageSize": 100,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 1450
+    },
+    {
+      "id": "bot-beo",
+      "name": "Bột béo (Kievit)",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 95
+    },
+    {
+      "id": "sua-tuoi",
+      "name": "Sữa tươi (Milk Lab)",
+      "baseUnit": "ml",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 38
+    },
+    {
+      "id": "sua-dac",
+      "name": "Sữa đặc (Phương Nam)",
+      "baseUnit": "g",
+      "packageSize": 1284,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 54.7
+    },
+    {
+      "id": "whipping",
+      "name": "Whipping cream (Rich's)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 70.48
+    },
+    {
+      "id": "syrup-hoa-hong",
+      "name": "Syrup hoa hồng (Monin)",
+      "baseUnit": "ml",
+      "packageSize": 700,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 314.3
+    },
+    {
+      "id": "syrup-luu",
+      "name": "Syrup lựu (Monin)",
+      "baseUnit": "ml",
+      "packageSize": 700,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 314.3
+    },
+    {
+      "id": "mut-chanh-day",
+      "name": "Mứt chanh dây (Wao Tea)",
+      "baseUnit": "ml",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 174.9
+    },
+    {
+      "id": "mut-vai",
+      "name": "Mứt vải (Wao Tea)",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 174.9
+    },
+    {
+      "id": "mut-xoai",
+      "name": "Mứt xoài (Wao Tea)",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 174.9
+    },
+    {
+      "id": "mut-dau",
+      "name": "Mứt dâu (Wao Tea)",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 174.9
+    },
+    {
+      "id": "trai-vai",
+      "name": "Trái vải ngâm (décor)",
+      "baseUnit": "unit",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 2250
+    },
+    {
+      "id": "nuoc-cot-dua",
+      "name": "Nước cốt dừa lon 160ml",
+      "baseUnit": "ml",
+      "packageSize": 160,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 137.5
+    },
+    {
+      "id": "thach-nha-dam",
+      "name": "Thạch nha đam",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 42
+    },
+    {
+      "id": "tran-chau",
+      "name": "Trân châu Caramel 3Q",
+      "baseUnit": "g",
+      "packageSize": 2000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 28.5
+    },
+    {
+      "id": "cot-chanh",
+      "name": "Nước cốt chanh",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 200
+    },
+    {
+      "id": "hung-lui",
+      "name": "Húng lủi (décor)",
+      "baseUnit": "unit",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 200
+    },
+    {
+      "id": "bo-ly",
+      "name": "Bộ ly + nắp/túi + ống hút",
+      "baseUnit": "unit",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 2000
+    },
+    {
+      "id": "cot-ca-phe-phin",
+      "name": "Cốt cà phê phin BTP",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 100
+    },
+    {
+      "id": "ca-phe-espresso",
+      "name": "Cà phê espresso (hạt)",
+      "baseUnit": "g",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "vanilla-syrup",
+      "name": "Vanilla syrup",
+      "baseUnit": "ml",
+      "packageSize": 750,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 280
+    },
+    {
+      "id": "caramel-syrup",
+      "name": "Caramel syrup",
+      "baseUnit": "ml",
+      "packageSize": 750,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 280
+    },
+    {
+      "id": "bot-cacao",
+      "name": "Bột cacao",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 150
+    },
+    {
+      "id": "cam",
+      "name": "Cam nguyên quả",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 18
+    },
+    {
+      "id": "thom",
+      "name": "Thơm nguyên quả",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 25
+    },
+    {
+      "id": "tao",
+      "name": "Táo",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 40
+    },
+    {
+      "id": "ca-rot",
+      "name": "Cà rốt",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 30
+    },
+    {
+      "id": "dua-leo",
+      "name": "Dưa leo",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 20
+    },
+    {
+      "id": "can-tay",
+      "name": "Cần tây",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 30
+    },
+    {
+      "id": "cu-cai-duong",
+      "name": "Củ cải đường",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 80
+    },
+    {
+      "id": "gung",
+      "name": "Gừng",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 40
+    },
+    {
+      "id": "bo-xoi",
+      "name": "Bó xôi",
+      "baseUnit": "g",
+      "packageSize": 1000,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 45
+    },
+    {
+      "id": "nuoc-dua",
+      "name": "Nước dừa tươi (trái)",
+      "baseUnit": "unit",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 15000
+    },
+    {
+      "id": "nuoc-loc",
+      "name": "Nước lọc",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 1.1
+    },
+    {
+      "id": "ing-tierra-del-fuego",
+      "name": "Tierra del Fuego (rượu)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-cabina-56-reserva",
+      "name": "Cabina '56 Reserva (rượu)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    }
+  ]
+}

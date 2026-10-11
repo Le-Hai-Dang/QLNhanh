@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "module": "ingredients",
+  "operation": "create",
+  "records": [
+    {
+      "id": "ing-aresti",
+      "name": "ARESTI (rượu)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-santa-estampilla",
+      "name": "Santa Estampilla (rượu)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-malnegro-primitivo",
+      "name": "Malnegro Primitivo (chai)",
+      "baseUnit": "unit",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-chateau-saint-andre-cobin",
+      "name": "Chateau Saint-André Cobin (chai)",
+      "baseUnit": "unit",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-chateau-de-pasquette",
+      "name": "Château de Pasquette Saint-Emilion Grand Cru (chai)",
+      "baseUnit": "unit",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-tiraki-sauvignon-blanc",
+      "name": "Tiraki Sauvignon Blanc (chai)",
+      "baseUnit": "unit",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-paul-barn",
+      "name": "Paul Barn (chai)",
+      "baseUnit": "unit",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-dame-prosecco",
+      "name": "Dame Prosecco (chai)",
+      "baseUnit": "unit",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-absolut",
+      "name": "Absolut (rượu)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-bombay",
+      "name": "Bombay (rượu)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-bacardi-light",
+      "name": "Bacardi Light (rượu)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-jose-cuervo",
+      "name": "Jose Cuervo (rượu)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-jim-beam",
+      "name": "Jim Beam (rượu)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-hennessy-vs",
+      "name": "Hennessy V.S (rượu)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-macallan-12",
+      "name": "Macallan 12 (rượu)",
+      "baseUnit": "ml",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-corona-extra",
+      "name": "Corona Extra (355ml)",
+      "baseUnit": "unit",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    },
+    {
+      "id": "ing-heineken-phap",
+      "name": "Heineken Pháp (250ml)",
+      "baseUnit": "unit",
+      "packageSize": 0,
+      "openingStock": 0,
+      "minimumStock": 0,
+      "unitCost": 0
+    }
+  ]
+}

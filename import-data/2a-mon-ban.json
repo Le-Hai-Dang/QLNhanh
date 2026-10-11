@@ -1,0 +1,287 @@
+{
+  "schemaVersion": 1,
+  "module": "menuItems",
+  "operation": "create",
+  "records": [
+    {
+      "id": "m-matcha-latte",
+      "name": "Matcha Latte",
+      "price": 45000,
+      "group": "Matcha Tea",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-matcha-latte-coffee",
+      "name": "Matcha Latte Coffee",
+      "price": 55000,
+      "group": "Matcha Tea",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-matcha-strawberry",
+      "name": "Matcha Strawberry",
+      "price": 55000,
+      "group": "Matcha Tea",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-matcha-mango-coconut",
+      "name": "Matcha Mango Coconut",
+      "price": 55000,
+      "group": "Matcha Tea",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-traditional-milk-tea",
+      "name": "Traditional Milk Tea",
+      "price": 50000,
+      "group": "Milk Tea",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-green-tea-milk-tea",
+      "name": "Green Tea Milk Tea",
+      "price": 50000,
+      "group": "Milk Tea",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-strawberry-milk-tea",
+      "name": "Strawberry Milk Tea",
+      "price": 55000,
+      "group": "Milk Tea",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-mango-passion-fruit-tea",
+      "name": "Mango Passion Fruit Tea",
+      "price": 50000,
+      "group": "Fruit Tea",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-lychee-rose-tea",
+      "name": "Lychee Rose Tea",
+      "price": 55000,
+      "group": "Fruit Tea",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-strawberry-pomegranate-tea",
+      "name": "Strawberry Pomegranate Tea",
+      "price": 55000,
+      "group": "Fruit Tea",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-ice-coffee",
+      "name": "Ice Coffee",
+      "price": 31000,
+      "group": "Coffee",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-milk-coffee",
+      "name": "Milk Coffee",
+      "price": 35000,
+      "group": "Coffee",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-bac-xiu",
+      "name": "Bac Xiu",
+      "price": 39000,
+      "group": "Coffee",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-espresso",
+      "name": "Espresso",
+      "price": 39000,
+      "group": "Coffee",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-americano-iced",
+      "name": "Americano (Iced)",
+      "price": 39000,
+      "group": "Coffee",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-latte-iced",
+      "name": "Latte (Iced)",
+      "price": 49000,
+      "group": "Coffee",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-latte-hot",
+      "name": "Latte (Hot)",
+      "price": 49000,
+      "group": "Coffee",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-cappuccino",
+      "name": "Cappuccino",
+      "price": 49000,
+      "group": "Coffee",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-caramel-macchiato-iced",
+      "name": "Caramel Macchiato (Iced)",
+      "price": 59000,
+      "group": "Coffee",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-caramel-macchiato-hot",
+      "name": "Caramel Macchiato (Hot)",
+      "price": 59000,
+      "group": "Coffee",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-orange-juice",
+      "name": "Orange Juice",
+      "price": 45000,
+      "group": "Juice",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-fresh-coconut",
+      "name": "Fresh Coconut",
+      "price": 45000,
+      "group": "Juice",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-pineapple-juice",
+      "name": "Pineapple Juice",
+      "price": 49000,
+      "group": "Juice",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-orange-carrot-juice",
+      "name": "Orange & Carrot Juice",
+      "price": 49000,
+      "group": "Juice",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-glow-skin",
+      "name": "Glow Skin",
+      "price": 59000,
+      "group": "Detox",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-liver-detox",
+      "name": "Liver Detox",
+      "price": 59000,
+      "group": "Detox",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-energy-boost",
+      "name": "Energy Boost",
+      "price": 59000,
+      "group": "Detox",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-green-fresh-detox",
+      "name": "Green Fresh Detox",
+      "price": 59000,
+      "group": "Detox",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-tropical-glow",
+      "name": "Tropical Glow",
+      "price": 59000,
+      "group": "Detox",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-tierra-del-fuego-glass",
+      "name": "Tierra del Fuego (Ly)",
+      "price": 90000,
+      "group": "Red Wine",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-tierra-del-fuego-bottle",
+      "name": "Tierra del Fuego (Chai)",
+      "price": 490000,
+      "group": "Red Wine",
+      "unit": "chai",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-cabina-56-reserva-glass",
+      "name": "Cabina '56 Reserva (Ly)",
+      "price": 130000,
+      "group": "Red Wine",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-cabina-56-reserva-bottle",
+      "name": "Cabina '56 Reserva (Chai)",
+      "price": 680000,
+      "group": "Red Wine",
+      "unit": "chai",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-aresti-glass",
+      "name": "ARESTI (Ly)",
+      "price": 90000,
+      "group": "White Wine",
+      "unit": "ly",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "m-aresti-bottle",
+      "name": "ARESTI (Chai)",
+      "price": 490000,
+      "group": "White Wine",
+      "unit": "chai",
+      "status": "ACTIVE"
+    }
+  ]
+}
