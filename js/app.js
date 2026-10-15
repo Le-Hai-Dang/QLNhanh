@@ -472,11 +472,14 @@ function renderShell() {
   document.querySelector("#pageTitle").textContent =
     viewTitle(state.view);
   document.title = viewTitle(state.view) + " · LE CORNER Inventory";
+  const account = repo.user?.email?.replace(/@lecorner\.app$/, "");
   document.querySelector("#authStatus").textContent = state.connected
     ? repo.mode === "firebase"
-      ? "Đã kết nối Firebase"
+      ? "Đăng nhập: " + (account || "—")
       : "Demo cục bộ · không đồng bộ"
     : "Chưa kết nối Firebase";
+  document.querySelector("#logoutButton").hidden =
+    repo.mode !== "firebase" || !repo.user;
 }
 function render() {
   renderShell();
@@ -2170,6 +2173,47 @@ function decorateControls() {
   const save = document.querySelector('[data-testid="save-entity"]');
   save.disabled = state.busy || !state.connected;
 }
+function showLogin(message = "") {
+  state.connected = false;
+  renderShell();
+  document.querySelector("#loginError").textContent = message;
+  const d = document.querySelector("#loginDialog");
+  if (!d.open) d.showModal();
+  document.querySelector("#loginUser").focus();
+}
+document.querySelector("#loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const button = document.querySelector("#loginSubmit");
+  button.disabled = true;
+  document.querySelector("#loginError").textContent = "";
+  try {
+    await repo.signIn(
+      document.querySelector("#loginUser").value,
+      document.querySelector("#loginPassword").value,
+    );
+    document.querySelector("#loginPassword").value = "";
+    document.querySelector("#loginDialog").close();
+    await load();
+  } catch (err) {
+    document.querySelector("#loginError").textContent =
+      err.message || "Đăng nhập thất bại.";
+  } finally {
+    button.disabled = false;
+  }
+});
+// The login dialog cannot be dismissed with Escape: the app has no data without it.
+document
+  .querySelector("#loginDialog")
+  .addEventListener("cancel", (e) => e.preventDefault());
+document.querySelector("#logoutButton").addEventListener("click", async () => {
+  if (!(await askConfirm("Đăng xuất khỏi tài khoản này?"))) return;
+  await repo.signOut();
+  state.catalog = {};
+  state.history = [];
+  state.cart = [];
+  render();
+  showLogin();
+});
 (async () => {
   render();
   status("Đang kết nối Firebase...");
@@ -2179,6 +2223,11 @@ function decorateControls() {
   } catch (e) {
     state.connected = false;
     renderShell();
+    if (e.code === "AUTH") {
+      status("Chưa đăng nhập");
+      showLogin();
+      return;
+    }
     status("Chưa kết nối · chưa có dữ liệu");
     toast(e.message || "Không thể kết nối Firebase.", true);
   }

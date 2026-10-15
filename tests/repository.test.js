@@ -326,8 +326,8 @@ async function firestoreFixture() {
     user = "test-user";
   for (const c of COLLECTIONS)
     for (const row of base.repo.catalog()[c])
-      db.store.set("users/" + user + "/" + c + "/" + row.id, row);
-  db.store.set("users/" + user + "/settings/app", {
+      db.store.set("stores/le-corner/" + c + "/" + row.id, row);
+  db.store.set("stores/le-corner/settings/app", {
     activeDatasetId: "live",
     revision: base.repo.revision,
   });
@@ -343,7 +343,7 @@ test("Firestore exports more than 300 rows and staging failure preserves every a
   const { repo, db } = await firestoreFixture();
   for (let n = 0; n < 310; n++) {
     const id = "menu" + String(n).padStart(4, "0");
-    db.store.set("users/test-user/menuItems/" + id, {
+    db.store.set("stores/le-corner/menuItems/" + id, {
       id,
       datasetId: "live",
       name: "Item " + n,
@@ -368,9 +368,9 @@ test("Firestore exports more than 300 rows and staging failure preserves every a
 test("Firestore restore stages distinct physical IDs and activates only complete reconciled state", async () => {
   const { repo, db } = await firestoreFixture(),
     backup = await repo.backup(),
-    old = clone(db.store.get("users/test-user/menuItems/americano"));
+    old = clone(db.store.get("stores/le-corner/menuItems/americano"));
   const result = await repo.fullRestore(backup);
-  assert.deepEqual(db.store.get("users/test-user/menuItems/americano"), old);
+  assert.deepEqual(db.store.get("stores/le-corner/menuItems/americano"), old);
   assert.notEqual(physicalId(result.datasetId, "americano"), "americano");
   const restored = await repo.backup();
   assert.equal((await validateBackup(restored)).ok, true);
@@ -380,21 +380,41 @@ test("Firestore restore stages distinct physical IDs and activates only complete
 test("Firestore rejects activation if another tab changed the active dataset revision", async () => {
   const { repo, db } = await firestoreFixture(),
     backup = await repo.backup(),
-    old = clone(db.store.get("users/test-user/ingredients/coffee"));
+    old = clone(db.store.get("stores/le-corner/ingredients/coffee"));
   let changed = false;
   await assert.rejects(
     repo.fullRestore(backup, (phase) => {
       if (phase === "staging" && !changed) {
         changed = true;
-        const settings = db.store.get("users/test-user/settings/app");
+        const settings = db.store.get("stores/le-corner/settings/app");
         settings.revision++;
       }
     }),
     { code: "CONFLICT" },
   );
   assert.equal(
-    db.store.get("users/test-user/settings/app").activeDatasetId,
+    db.store.get("stores/le-corner/settings/app").activeDatasetId,
     "live",
   );
-  assert.deepEqual(db.store.get("users/test-user/ingredients/coffee"), old);
+  assert.deepEqual(db.store.get("stores/le-corner/ingredients/coffee"), old);
+});
+
+test("Firestore requires a signed-in, non-anonymous account and uses the shared store", async () => {
+  const { loginEmail } = await import("../js/repository.js");
+  assert.equal(loginEmail(" Admin "), "admin@lecorner.app");
+  assert.equal(loginEmail("x@y.com"), "x@y.com");
+  for (const currentUser of [null, { uid: "a", isAnonymous: true }]) {
+    const repo = new FirestoreRepository({
+      auth: () => ({ currentUser }),
+      firestore: () => new FakeDb(),
+    });
+    await assert.rejects(repo.ready(), (e) => e.code === "AUTH");
+  }
+  const db = new FakeDb();
+  const repo = new FirestoreRepository({
+    auth: () => ({ currentUser: { uid: "staff-1" } }),
+    firestore: () => db,
+  });
+  await repo.ready();
+  assert.ok(db.store.has("stores/le-corner/settings/app"));
 });

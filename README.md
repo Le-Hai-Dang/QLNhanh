@@ -1,6 +1,12 @@
 # LE CORNER Inventory
 
-HTML5, CSS3, Vanilla JavaScript, Firebase Anonymous Authentication và Firestore project `qlnhanh`. Không dùng Firebase CLI.
+HTML5, CSS3, Vanilla JavaScript, Firebase Authentication (email/mật khẩu) và Firestore project `qlnhanh`. Không dùng Firebase CLI.
+
+## Đăng nhập & dữ liệu chung
+
+Mọi tài khoản nhân viên dùng chung một kho `stores/le-corner/...`. Màn đăng nhập nhận **tên tài khoản**; app tự đổi thành email `<tên>@lecorner.app`.
+
+Thêm tài khoản: Firebase Console → Authentication → Users → Add user (email `<tên>@lecorner.app`), rồi thêm email đó vào danh sách trong `firestore.rules` và dán Rules vào Firestore → Rules → Publish. Không lưu mật khẩu trong repository.
 
 ## Chạy local
 

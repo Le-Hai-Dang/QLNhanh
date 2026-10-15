@@ -73,6 +73,15 @@
         <div class="sidebar-foot">
           <span class="status-dot"></span
           ><span id="authStatus">Đang kết nối...</span>
+          <button
+            id="logoutButton"
+            type="button"
+            class="logout-button"
+            data-testid="logout-button"
+            hidden
+          >
+            Đăng xuất
+          </button>
         </div>
       </aside>
       <main class="main-content">
@@ -149,6 +158,25 @@
         </button>
       </div>
       <div id="detailBody"></div>
+    </dialog>
+    <dialog id="loginDialog" class="dialog login-dialog" aria-labelledby="loginTitle">
+      <form id="loginForm">
+        <div class="brand login-brand">
+          <span class="brand-mark">LC</span>
+          <div><strong>LE CORNER</strong><small>Inventory</small></div>
+        </div>
+        <h2 id="loginTitle">Đăng nhập</h2>
+        <div class="field">
+          <label for="loginUser">Tài khoản</label>
+          <input class="input" id="loginUser" name="username" autocomplete="username" autocapitalize="none" required data-testid="login-user" />
+        </div>
+        <div class="field">
+          <label for="loginPassword">Mật khẩu</label>
+          <input class="input" id="loginPassword" name="password" type="password" autocomplete="current-password" required data-testid="login-password" />
+        </div>
+        <p id="loginError" class="login-error" role="alert"></p>
+        <button id="loginSubmit" type="submit" class="primary-button" data-testid="login-submit">Đăng nhập</button>
+      </form>
     </dialog>
     <dialog
       id="confirmationDialog"

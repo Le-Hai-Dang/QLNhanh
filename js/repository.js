@@ -397,11 +397,18 @@ function restoreEvent({
   };
 }
 
+// Usernames are mapped to Firebase email/password accounts on this domain.
+export const LOGIN_DOMAIN = "lecorner.app";
+export const loginEmail = (username) => {
+  const name = String(username || "").trim().toLowerCase();
+  return name.includes("@") ? name : name + "@" + LOGIN_DOMAIN;
+};
 export class FirestoreRepository {
-  constructor(firebase, { namespace = "" } = {}) {
+  constructor(firebase, { namespace = "", storeId = "le-corner" } = {}) {
     this.auth = firebase.auth();
     this.db = firebase.firestore();
     this.uid = null;
+    this.storeId = storeId;
     this.mode = "firebase";
     this.datasetId = "live";
     this.revision = 0;
@@ -409,7 +416,8 @@ export class FirestoreRepository {
     this.initialDataset = namespace ? "qa-" + namespace : "live";
   }
   col(c) {
-    return this.db.collection("users").doc(this.uid).collection(c);
+    // One shared store for the shop; every signed-in staff account sees the same data.
+    return this.db.collection("stores").doc(this.storeId).collection(c);
   }
   settings() {
     return this.col("settings").doc(this.settingsId);
@@ -417,9 +425,42 @@ export class FirestoreRepository {
   ref(c, id, dataset = this.datasetId) {
     return this.col(c).doc(physicalId(dataset, id));
   }
+  // Resolves once Firebase has restored any saved session from a previous visit.
+  waitForAuth() {
+    if (this.auth.currentUser || !this.auth.onAuthStateChanged)
+      return Promise.resolve(this.auth.currentUser);
+    return new Promise((resolve) => {
+      const stop = this.auth.onAuthStateChanged((user) => {
+        stop();
+        resolve(user);
+      });
+    });
+  }
+  get user() {
+    return this.auth.currentUser;
+  }
+  async signIn(username, password) {
+    try {
+      await this.auth.signInWithEmailAndPassword(loginEmail(username), password);
+    } catch (e) {
+      throw new BusinessError(
+        /network/i.test(e.code || "")
+          ? "Không kết nối được mạng."
+          : "Sai tài khoản hoặc mật khẩu.",
+        "AUTH",
+      );
+    }
+    return this.ready();
+  }
+  async signOut() {
+    await this.auth.signOut();
+    this.uid = null;
+  }
   async ready() {
-    if (!this.auth.currentUser) await this.auth.signInAnonymously();
-    this.uid = this.auth.currentUser.uid;
+    const user = await this.waitForAuth();
+    if (!user || user.isAnonymous)
+      throw new BusinessError("Cần đăng nhập để dùng dữ liệu của quán.", "AUTH");
+    this.uid = user.uid;
     await this.db.runTransaction(async (tx) => {
       const s = await tx.get(this.settings());
       if (!s.exists)

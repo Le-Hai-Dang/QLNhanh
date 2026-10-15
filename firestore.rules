@@ -1,33 +1,40 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    // Only staff accounts created by the owner in Firebase Console may use the
+    // shared shop data. Add an email here (and deploy the rules) to add staff.
+    function staff() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'password'
+        && request.auth.token.email in [
+          'admin@lecorner.app'
+        ];
+    }
 
-    // Entity documents can be edited by their owner. Audit collections are
+    // Entity documents can be edited by staff. Audit collections are
     // append-only and are deliberately excluded from this list.
-    match /users/{uid}/{collection}/{documentId} {
-      allow read: if owner(uid);
-      allow create, update: if owner(uid) && collection in [
+    match /stores/{storeId}/{collection}/{documentId} {
+      allow read: if staff();
+      allow create, update: if staff() && collection in [
         'menuItems', 'ingredients', 'recipes', 'sales',
         'purchaseReceipts', 'stockCounts', 'reorderSettings', 'settings'
       ];
       allow delete: if false;
     }
-    match /users/{uid}/activityEvents/{eventId} {
-      allow read, create: if owner(uid);
+    match /stores/{storeId}/activityEvents/{eventId} {
+      allow read, create: if staff();
       allow update, delete: if false;
     }
-    match /users/{uid}/entityVersions/{versionId} {
-      allow read, create: if owner(uid);
+    match /stores/{storeId}/entityVersions/{versionId} {
+      allow read, create: if staff();
       allow update, delete: if false;
     }
-    match /users/{uid}/stockLedger/{movementId} {
-      allow read, create: if owner(uid);
+    match /stores/{storeId}/stockLedger/{movementId} {
+      allow read, create: if staff();
       allow update, delete: if false;
     }
-    match /users/{uid}/restoreJobs/{jobId} {
-      allow read, create: if owner(uid);
-      allow update: if owner(uid);
+    match /stores/{storeId}/restoreJobs/{jobId} {
+      allow read, create, update: if staff();
       allow delete: if false;
     }
   }
