@@ -347,18 +347,18 @@
     },
     {
       "id": "ing-tierra-del-fuego",
-      "name": "Tierra del Fuego (rượu)",
+      "name": "Tierra del Fuego (vang 750ml)",
       "baseUnit": "ml",
-      "packageSize": 0,
+      "packageSize": 750,
       "openingStock": 0,
       "minimumStock": 0,
       "unitCost": 0
     },
     {
       "id": "ing-cabina-56-reserva",
-      "name": "Cabina '56 Reserva (rượu)",
+      "name": "Cabina '56 Reserva (vang 750ml)",
       "baseUnit": "ml",
-      "packageSize": 0,
+      "packageSize": 750,
       "openingStock": 0,
       "minimumStock": 0,
       "unitCost": 0

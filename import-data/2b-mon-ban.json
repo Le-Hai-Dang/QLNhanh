@@ -72,7 +72,7 @@
       "name": "Absolut",
       "price": 110000,
       "group": "Spirit",
-      "unit": "ly",
+      "unit": "shot",
       "status": "ACTIVE"
     },
     {
@@ -80,7 +80,7 @@
       "name": "Bombay",
       "price": 110000,
       "group": "Spirit",
-      "unit": "ly",
+      "unit": "shot",
       "status": "ACTIVE"
     },
     {
@@ -88,7 +88,7 @@
       "name": "Bacardi Light",
       "price": 110000,
       "group": "Spirit",
-      "unit": "ly",
+      "unit": "shot",
       "status": "ACTIVE"
     },
     {
@@ -96,7 +96,7 @@
       "name": "Jose Cuervo",
       "price": 110000,
       "group": "Spirit",
-      "unit": "ly",
+      "unit": "shot",
       "status": "ACTIVE"
     },
     {
@@ -104,7 +104,7 @@
       "name": "Jim Beam",
       "price": 90000,
       "group": "Spirit",
-      "unit": "ly",
+      "unit": "shot",
       "status": "ACTIVE"
     },
     {
@@ -112,7 +112,7 @@
       "name": "Hennessy V.S",
       "price": 150000,
       "group": "Spirit",
-      "unit": "ly",
+      "unit": "shot",
       "status": "ACTIVE"
     },
     {
@@ -120,7 +120,7 @@
       "name": "Macallan 12",
       "price": 310000,
       "group": "Spirit",
-      "unit": "ly",
+      "unit": "shot",
       "status": "ACTIVE"
     },
     {

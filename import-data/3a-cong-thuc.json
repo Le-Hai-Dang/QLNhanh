@@ -316,6 +316,60 @@
       ]
     },
     {
+      "id": "r-ice-coffee",
+      "menuItemId": "m-ice-coffee",
+      "items": [
+        {
+          "ingredientId": "cot-ca-phe-phin",
+          "quantity": 60
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-milk-coffee",
+      "menuItemId": "m-milk-coffee",
+      "items": [
+        {
+          "ingredientId": "cot-ca-phe-phin",
+          "quantity": 60
+        },
+        {
+          "ingredientId": "sua-dac",
+          "quantity": 20
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-bac-xiu",
+      "menuItemId": "m-bac-xiu",
+      "items": [
+        {
+          "ingredientId": "cot-ca-phe-phin",
+          "quantity": 30
+        },
+        {
+          "ingredientId": "sua-dac",
+          "quantity": 40
+        },
+        {
+          "ingredientId": "sua-tuoi",
+          "quantity": 40
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
       "id": "r-espresso",
       "menuItemId": "m-espresso",
       "items": [
@@ -496,6 +550,84 @@
       ]
     },
     {
+      "id": "r-orange-carrot-juice",
+      "menuItemId": "m-orange-carrot-juice",
+      "items": [
+        {
+          "ingredientId": "cam",
+          "quantity": 450
+        },
+        {
+          "ingredientId": "ca-rot",
+          "quantity": 300
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-glow-skin",
+      "menuItemId": "m-glow-skin",
+      "items": [
+        {
+          "ingredientId": "can-tay",
+          "quantity": 62
+        },
+        {
+          "ingredientId": "dua-leo",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "thom",
+          "quantity": 120
+        },
+        {
+          "ingredientId": "tao",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-liver-detox",
+      "menuItemId": "m-liver-detox",
+      "items": [
+        {
+          "ingredientId": "cu-cai-duong",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "tao",
+          "quantity": 100
+        },
+        {
+          "ingredientId": "can-tay",
+          "quantity": 62
+        },
+        {
+          "ingredientId": "cot-chanh",
+          "quantity": 5
+        },
+        {
+          "ingredientId": "gung",
+          "quantity": 2
+        },
+        {
+          "ingredientId": "bo-xoi",
+          "quantity": 20
+        },
+        {
+          "ingredientId": "bo-ly",
+          "quantity": 1
+        }
+      ]
+    },
+    {
       "id": "r-energy-boost",
       "menuItemId": "m-energy-boost",
       "items": [
@@ -584,12 +716,32 @@
       ]
     },
     {
+      "id": "r-tierra-del-fuego-bottle",
+      "menuItemId": "m-tierra-del-fuego-bottle",
+      "items": [
+        {
+          "ingredientId": "ing-tierra-del-fuego",
+          "quantity": 750
+        }
+      ]
+    },
+    {
       "id": "r-cabina-56-reserva-glass",
       "menuItemId": "m-cabina-56-reserva-glass",
       "items": [
         {
           "ingredientId": "ing-cabina-56-reserva",
           "quantity": 145
+        }
+      ]
+    },
+    {
+      "id": "r-cabina-56-reserva-bottle",
+      "menuItemId": "m-cabina-56-reserva-bottle",
+      "items": [
+        {
+          "ingredientId": "ing-cabina-56-reserva",
+          "quantity": 750
         }
       ]
     },
@@ -604,6 +756,16 @@
       ]
     },
     {
+      "id": "r-aresti-bottle",
+      "menuItemId": "m-aresti-bottle",
+      "items": [
+        {
+          "ingredientId": "ing-aresti",
+          "quantity": 750
+        }
+      ]
+    },
+    {
       "id": "r-santa-estampilla-glass",
       "menuItemId": "m-santa-estampilla-glass",
       "items": [
@@ -614,12 +776,22 @@
       ]
     },
     {
+      "id": "r-santa-estampilla-bottle",
+      "menuItemId": "m-santa-estampilla-bottle",
+      "items": [
+        {
+          "ingredientId": "ing-santa-estampilla",
+          "quantity": 750
+        }
+      ]
+    },
+    {
       "id": "r-malnegro-primitivo-bottle",
       "menuItemId": "m-malnegro-primitivo-bottle",
       "items": [
         {
           "ingredientId": "ing-malnegro-primitivo",
-          "quantity": 1
+          "quantity": 750
         }
       ]
     },
@@ -629,7 +801,7 @@
       "items": [
         {
           "ingredientId": "ing-chateau-saint-andre-cobin",
-          "quantity": 1
+          "quantity": 750
         }
       ]
     },
@@ -639,7 +811,7 @@
       "items": [
         {
           "ingredientId": "ing-chateau-de-pasquette",
-          "quantity": 1
+          "quantity": 750
         }
       ]
     },
@@ -649,7 +821,7 @@
       "items": [
         {
           "ingredientId": "ing-tiraki-sauvignon-blanc",
-          "quantity": 1
+          "quantity": 750
         }
       ]
     },
@@ -659,7 +831,7 @@
       "items": [
         {
           "ingredientId": "ing-paul-barn",
-          "quantity": 1
+          "quantity": 750
         }
       ]
     },
@@ -669,7 +841,7 @@
       "items": [
         {
           "ingredientId": "ing-dame-prosecco",
-          "quantity": 1
+          "quantity": 750
         }
       ]
     },
@@ -679,7 +851,7 @@
       "items": [
         {
           "ingredientId": "ing-absolut",
-          "quantity": 145
+          "quantity": 45
         }
       ]
     },
@@ -689,77 +861,7 @@
       "items": [
         {
           "ingredientId": "ing-bombay",
-          "quantity": 145
-        }
-      ]
-    },
-    {
-      "id": "r-bacardi-light",
-      "menuItemId": "m-bacardi-light",
-      "items": [
-        {
-          "ingredientId": "ing-bacardi-light",
-          "quantity": 145
-        }
-      ]
-    },
-    {
-      "id": "r-jose-cuervo",
-      "menuItemId": "m-jose-cuervo",
-      "items": [
-        {
-          "ingredientId": "ing-jose-cuervo",
-          "quantity": 145
-        }
-      ]
-    },
-    {
-      "id": "r-jim-beam",
-      "menuItemId": "m-jim-beam",
-      "items": [
-        {
-          "ingredientId": "ing-jim-beam",
-          "quantity": 145
-        }
-      ]
-    },
-    {
-      "id": "r-hennessy-vs",
-      "menuItemId": "m-hennessy-vs",
-      "items": [
-        {
-          "ingredientId": "ing-hennessy-vs",
-          "quantity": 145
-        }
-      ]
-    },
-    {
-      "id": "r-macallan-12",
-      "menuItemId": "m-macallan-12",
-      "items": [
-        {
-          "ingredientId": "ing-macallan-12",
-          "quantity": 145
-        }
-      ]
-    },
-    {
-      "id": "r-corona-extra",
-      "menuItemId": "m-corona-extra",
-      "items": [
-        {
-          "ingredientId": "ing-corona-extra",
-          "quantity": 1
-        }
-      ]
-    },
-    {
-      "id": "r-heineken-phap",
-      "menuItemId": "m-heineken-phap",
-      "items": [
-        {
-          "ingredientId": "ing-heineken-phap",
-          "quantity": 1
+          "quantity": 45
         }
       ]
     }

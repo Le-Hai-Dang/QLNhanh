@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "module": "recipes",
+  "operation": "create",
+  "records": [
+    {
+      "id": "r-bacardi-light",
+      "menuItemId": "m-bacardi-light",
+      "items": [
+        {
+          "ingredientId": "ing-bacardi-light",
+          "quantity": 45
+        }
+      ]
+    },
+    {
+      "id": "r-jose-cuervo",
+      "menuItemId": "m-jose-cuervo",
+      "items": [
+        {
+          "ingredientId": "ing-jose-cuervo",
+          "quantity": 45
+        }
+      ]
+    },
+    {
+      "id": "r-jim-beam",
+      "menuItemId": "m-jim-beam",
+      "items": [
+        {
+          "ingredientId": "ing-jim-beam",
+          "quantity": 45
+        }
+      ]
+    },
+    {
+      "id": "r-hennessy-vs",
+      "menuItemId": "m-hennessy-vs",
+      "items": [
+        {
+          "ingredientId": "ing-hennessy-vs",
+          "quantity": 45
+        }
+      ]
+    },
+    {
+      "id": "r-macallan-12",
+      "menuItemId": "m-macallan-12",
+      "items": [
+        {
+          "ingredientId": "ing-macallan-12",
+          "quantity": 45
+        }
+      ]
+    },
+    {
+      "id": "r-corona-extra",
+      "menuItemId": "m-corona-extra",
+      "items": [
+        {
+          "ingredientId": "ing-corona-extra",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "r-heineken-phap",
+      "menuItemId": "m-heineken-phap",
+      "items": [
+        {
+          "ingredientId": "ing-heineken-phap",
+          "quantity": 1
+        }
+      ]
+    }
+  ]
+}
