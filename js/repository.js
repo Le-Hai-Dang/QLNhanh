@@ -406,6 +406,7 @@ export const loginEmail = (username) => {
 export class FirestoreRepository {
   constructor(firebase, { namespace = "", storeId = "le-corner" } = {}) {
     this.auth = firebase.auth();
+    this.persistence = firebase.auth.Auth?.Persistence?.LOCAL;
     this.db = firebase.firestore();
     this.uid = null;
     this.storeId = storeId;
@@ -441,6 +442,10 @@ export class FirestoreRepository {
   }
   async signIn(username, password) {
     try {
+      // LOCAL persistence keeps the session across tabs, reloads and restarts
+      // until the user presses "Đăng xuất".
+      if (this.auth.setPersistence && this.persistence)
+        await this.auth.setPersistence(this.persistence);
       await this.auth.signInWithEmailAndPassword(loginEmail(username), password);
     } catch (e) {
       throw new BusinessError(
